@@ -1,0 +1,9 @@
+*.pyc
+*.pdf
+*.snm
+*.tex~
+*.nav
+*.aux
+*.toc
+*.log
+*.out
