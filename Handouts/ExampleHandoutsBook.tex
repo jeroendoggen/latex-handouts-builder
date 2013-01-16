@@ -1,0 +1,46 @@
+\documentclass{book}
+\title{Example Book for lecture  handouts}
+
+\usepackage{pdfpages}
+\usepackage{url}
+\makeindex
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\chapter*{Introduction}
+\label{chap_intro}
+
+This book is created with the ``LaTeX Handouts Builder'' Python script.
+
+\noindent More info: \url{https://github.com/jeroendoggen/latex-handouts-builder}
+
+\noindent The script is still a work in progress. The features are based on a similar Bash script that I have been using for several years.
+
+\section*{Program flow}
+
+\begin{itemize}
+\item Run one command 'build.py'
+\item Several sets of LaTeX-beamer slides are build:
+\item pdf documents are created
+\item Different versions: 4/6 slides per page, handout version with printer friendly colors
+\item These slide handouts are merged in one 'handouts-LaTeX-book' with a title page, introduction, table of contents,...
+\item All these documents are compressed in a single .zip archive. (and uploaded to the course website)
+\end{itemize}
+
+
+\part{The First Chapter}
+\includepdf[pages={-}]{chap1-6pp.pdf}
+
+\part{The Second Chapter}
+\includepdf[pages={-}]{chap2-6pp.pdf}
+
+\part{The Third Chapter}
+\includepdf[pages={-}]{chap3-6pp.pdf}
+
+
+\end{document}
+ 
+
+

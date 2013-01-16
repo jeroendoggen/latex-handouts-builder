@@ -9,15 +9,23 @@
 
 \begin{document}
 
-% Titlepage 
 \maketitle
 
-% Outline Page
-% \section*{Overzicht}
-% \begin{frame}
-% \frametitle{Overzicht}
-% \tableofcontents[pausesections]
-% \end{frame}
+\AtBeginSubsection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
 
 
 \section{A Section}
@@ -31,33 +39,54 @@
 \end{frame}
 
 \begin{frame} 
-\frametitle{Start}
+\frametitle{A New Slide}
 \begin{itemize}
- \item Bla
+ \item Text
+ \item More text
 \end{itemize}
 \end{frame}
 
 \begin{frame} 
-\frametitle{Start}
+\frametitle{An other Slide}
 \begin{itemize}
- \item Bla
+ \item Text
+ \item More text
 \end{itemize}
 \end{frame}
 
 \section{An New Section}
 \begin{frame} 
-\frametitle{Start}
+\frametitle{Start Again}
 \begin{itemize}
- \item Bla
+ \item Text
+ \item More text
 \end{itemize}
 \end{frame}
 
 \begin{frame} 
-\frametitle{Start}
+\frametitle{The Last Slide of this section}
 \begin{itemize}
- \item Bla
+ \item Text
+ \item More text
 \end{itemize}
 \end{frame}
 
+\section{The last Section}
+\begin{frame} 
+\frametitle{Start Again}
+\begin{itemize}
+ \item Text
+ \item More text
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{The Last Slide}
+\begin{itemize}
+ \item Text
+ \item More text
+ \item The end!
+\end{itemize}
+\end{frame}
 
 \end{document}

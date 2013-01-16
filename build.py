@@ -31,6 +31,9 @@ import signal
 CONFIG_FILE = "chapters.conf"
 SCRIPTPATH = os.getcwd()
 FAILED_BUILDS = []
+BOOK_TITLE = "ExampleHandoutsBook"
+COUNTER = 0
+TOTAL_TASKS = 0
 
 
 def read_chapters_file(config_file):
@@ -45,21 +48,36 @@ def read_chapters_file(config_file):
     return chapters_list
 
 
-def print_chapters(chapters_list):
+def count_chapters(chapters_list):
+    """Count the number of chapters in the chapters list"""
+    counter = 0
+    for index in enumerate(chapters_list):
+        counter = counter + 1
+    return (counter)
+
+
+def print_chapters(chapters_list, book_title):
     """Print an overview of all the chapters"""
-    print("The following chapters will be processed:")
+    print("The following files will be processed:")
+    index = 0
     for index, item in enumerate(chapters_list):
         print (" ", end="")
         print (index + 1, end="")
         print (". ", end="")
-        print (item)
-    print("")
+        print (item, end=".tex")
+        print ("")
+    print (" ", end="")
+    print (index + 2, end="")
+    print (". ", end="")
+    print (book_title, end=".tex")
+    print ("")
+    print ("")
 
 
 def timed_cmd(command, timeout):
     """Call a cmd and kill it after 'timeout' seconds"""
     cmd = command.split(" ")
-    print(command)
+    print_progress_counter(command)
     start = datetime.datetime.now()
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
@@ -75,32 +93,63 @@ def timed_cmd(command, timeout):
     return process.poll()
 
 
+def print_progress_counter(command):
+    """Build the progress counter (e.g. 1/5, 2/5, ...)"""
+    global COUNTER
+    global TOTAL_TASKS
+    COUNTER = COUNTER + 1
+    print (COUNTER, end="/")
+    print (TOTAL_TASKS, end=" ")
+    print (command)
+
+
 def build_chapters(chapters_list):
-    """Print an overview of all the chapters"""
+    """Build all the chapters and move to handouts folder"""
     for index, current_chapter in enumerate(chapters_list):
+        try:
+            os.chdir(current_chapter)
+            timed_cmd(("pdflatex" + " " + current_chapter), 10)
+            timed_cmd(("pdflatex" + " " + current_chapter), 10)
+            timed_cmd(("pdfjam-slides6up" + " " + current_chapter + ".pdf "
+              + "--nup 2x3 --suffix 6pp -q"), 10)
+            timed_cmd(("mv" + " " + current_chapter + ".pdf"
+              + " " + "../Handouts"), 10)
+            timed_cmd(("mv" + " " + current_chapter + "-6pp" + ".pdf"
+              + " " + "../Handouts"), 10)
+        except OSError:
+            print("Error: unable to open test folder")
+            print("Check your config file")
+            FAILED_BUILDS.append(current_chapter)
         try:
             os.chdir(SCRIPTPATH)
         except OSError:
             print("Error: unable to open the script folder")
             print("This should never happen...")
-        try:
-            os.chdir(current_chapter)
-            found_test_path = True
-            timed_cmd(("pdflatex" + " " + current_chapter), 10)
-            timed_cmd(("mv" + " " + current_chapter + ".pdf"
-              + " " + "../Handouts"), 10)
-        except OSError:
-            print("Error: unable to open test folder")
-            print("Check your config file")
-            found_test_path = False
-            FAILED_BUILDS.append(current_chapter)
+
+
+def build_book(book_title):
+    """Build the handouts book"""
+    try:
+        os.chdir("Handouts")
+        timed_cmd(("pdflatex" + " " + book_title), 10)
+        timed_cmd(("pdflatex" + " " + book_title), 10)
+        print ("Build finished")
+        print ("Output written to: ", end="")
+        print (book_title, end=".pdf")
+        print ("")
+    except OSError:
+        print("Error: unable build the final book")
+        FAILED_BUILDS.append("The book:" + book_title)
 
 
 def run():
     """Run the main program"""
+    global TOTAL_TASKS
     chapters_list = read_chapters_file(CONFIG_FILE)
-    print_chapters(chapters_list)
-    build_chapters(chapters_list)
+    TOTAL_TASKS = 5 * count_chapters(chapters_list) + 2
+    print_chapters(chapters_list, BOOK_TITLE)
+    build_chapters(chapters_list,)
+    build_book(BOOK_TITLE)
     return(0)
 
 
