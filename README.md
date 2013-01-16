@@ -23,6 +23,8 @@ Dependencies:
 
 typical output:
 ---------------
+PDF output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.pdf?raw=true
+
     user@computer~/latex-handouts-builder$ python build.py 
     The following files will be processed:
     1. chap1.tex
