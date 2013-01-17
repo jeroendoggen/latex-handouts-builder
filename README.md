@@ -15,8 +15,16 @@ These slide handouts are merged in one 'ExampleHandoutsBook.pdf' file, with a ti
 
 All these documents are compressed in a single .zip archive. (and uploaded to the course website)
 
+Dependencies:
+-------------
+ * pdflatex
+ * pdfjam
+ * zip
+
 typical output:
 ---------------
+PDF output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.pdf?raw=true
+
     user@computer~/latex-handouts-builder$ python build.py 
     The following files will be processed:
     1. chap1.tex
