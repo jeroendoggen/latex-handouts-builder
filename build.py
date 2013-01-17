@@ -27,6 +27,7 @@ import datetime
 import subprocess
 import time
 import signal
+import glob
 
 CONFIG_FILE = "chapters.conf"
 SCRIPTPATH = os.getcwd()
@@ -116,6 +117,7 @@ def build_chapters(chapters_list):
               + " " + "../Handouts"), 10)
             timed_cmd(("mv" + " " + current_chapter + "-6pp" + ".pdf"
               + " " + "../Handouts"), 10)
+            cleanup()
         except OSError:
             print("Error: unable to open test folder")
             print("Check your config file")
@@ -133,6 +135,7 @@ def build_book(book_title):
         os.chdir("Handouts")
         timed_cmd(("pdflatex" + " " + book_title), 10)
         timed_cmd(("pdflatex" + " " + book_title), 10)
+        cleanup()
         print ("Build finished")
         print ("Output written to: ", end="")
         print (book_title, end=".pdf")
@@ -140,6 +143,25 @@ def build_book(book_title):
     except OSError:
         print("Error: unable build the final book")
         FAILED_BUILDS.append("The book:" + book_title)
+
+
+
+def cleanup():
+    """Clean temporary files
+    List taken from Kile
+    .aux .bit .blg .bbl .lof .log .lot .glo .glx .gxg .gxs .idx .ilg .ind
+    .out .url .svn .toc
+     My extra's
+    *~ .snm .nav
+    """
+    types = ('*.aux', '*.bit', '*.blg', '*.bbl', '*.lof', '*.log', '*.glo',
+             '*.glx', '*.gxg', '*.gxs', '*.idx', '*.ilg', '*.ind', '*.out',
+             '*.url', '*.svn', '*.toc',  '*~', '*.snm', '*.nav')
+    files_grabbed = []
+    for files in types:
+        files_grabbed.extend(glob.glob(files))
+    for filename in files_grabbed:
+        os.remove(filename)
 
 
 def run():
