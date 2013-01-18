@@ -1,28 +1,21 @@
 LaTeX Handouts Builder
 ======================
+Build Script for Latex-beamer based course handouts
 
-This script is currenly still a work in progress. The features are based on a similar bash script that I have been using for several years.
-
-Program flow:
--------------
-Run one command 'build.py'
-
-Several sets of LaTeX-beamer slides are build:
- * pdf documents are created
- * Different versions: 6 slides per page, handout version with printer friendly colors
-
-These slide handouts are merged in one 'ExampleHandoutsBook.pdf' file, with a title page, introduction, table of contents,...
-
-All these documents are compressed in a single 'ExampleHandoutsBook.zip' archive. (and uploaded to the course website)
+What is it does:
+ * Build multiple LaTeX beamer slide sets with one command: ``python build.py``
+ * Convert the slides to a printer-friendly format (no slide transitions, 6 slides per page, less colors)
+ * Build a main "course handouts book" with all the slides (one chapter per beamer slide set, title page, introduction, table of contents,...)
+ * Create a .zip archive with all the documents
 
 Dependencies:
 -------------
  * pdflatex
  * pdfjam
 
-typical output:
+Typical output:
 ---------------
-Output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.zip?raw=true
+Example .zip output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.zip?raw=true
 
     user@computer~/latex-handouts-builder$ python build.py 
     The following files will be processed:
@@ -49,6 +42,6 @@ Output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Hando
     16/18 pdflatex ExampleHandoutsBook
     17/18 pdflatex ExampleHandoutsBook
     Output written to: ExampleHandoutsBook.zip
-    Build took 42 seconds
+    Build took 17 seconds
 
 
