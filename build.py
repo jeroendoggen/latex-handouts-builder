@@ -28,13 +28,18 @@ import subprocess
 import time
 import signal
 import glob
+import zipfile
+import zlib
 
 CONFIG_FILE = "chapters.conf"
 SCRIPTPATH = os.getcwd()
+HANDOUTSPATH = "Handouts"
 FAILED_BUILDS = []
 BOOK_TITLE = "ExampleHandoutsBook"
+ARCHIVE_TITLE = "ExampleHandoutsBook.zip"
 COUNTER = 0
 TOTAL_TASKS = 0
+TASKS_PER_CHAPTER = 5
 
 
 def read_chapters_file(config_file):
@@ -79,6 +84,7 @@ def timed_cmd(command, timeout):
     """Call a cmd and kill it after 'timeout' seconds"""
     cmd = command.split(" ")
     print_progress_counter(command)
+    print (command)
     start = datetime.datetime.now()
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
@@ -95,13 +101,12 @@ def timed_cmd(command, timeout):
 
 
 def print_progress_counter(command):
-    """Build the progress counter (e.g. 1/5, 2/5, ...)"""
+    """Print the progress counter (e.g. 1/5, 2/5, ...)"""
     global COUNTER
     global TOTAL_TASKS
     COUNTER = COUNTER + 1
     print (COUNTER, end="/")
     print (TOTAL_TASKS, end=" ")
-    print (command)
 
 
 def build_chapters(chapters_list):
@@ -136,14 +141,9 @@ def build_book(book_title):
         timed_cmd(("pdflatex" + " " + book_title), 10)
         timed_cmd(("pdflatex" + " " + book_title), 10)
         cleanup()
-        print ("Build finished")
-        print ("Output written to: ", end="")
-        print (book_title, end=".pdf")
-        print ("")
     except OSError:
         print("Error: unable build the final book")
         FAILED_BUILDS.append("The book:" + book_title)
-
 
 
 def cleanup():
@@ -164,14 +164,44 @@ def cleanup():
         os.remove(filename)
 
 
+def create_archive(chapters_list):
+    """Build the archive with all slides and the book"""
+    try:
+        os.chdir(SCRIPTPATH)
+        os.chdir("Handouts")
+        compression = zipfile.ZIP_DEFLATED
+        zf = zipfile.ZipFile(ARCHIVE_TITLE, mode='w')
+        try:
+            for index, current_chapter in enumerate(chapters_list):
+                zf.write(current_chapter + ".pdf", compress_type=compression)
+                os.remove(current_chapter + ".pdf")
+                os.remove(current_chapter + "-6pp.pdf")
+            zf.write(BOOK_TITLE + ".pdf", compress_type=compression)
+            os.remove(BOOK_TITLE + ".pdf")
+        finally:
+            zf.close()
+        print
+    except OSError:
+        print("Error: unable build the archive: " + ARCHIVE_TITLE)
+        FAILED_BUILDS.append("Failed to build archive:" + ARCHIVE_TITLE)
+
+
+def print_summary(passedtime):
+    print("Output written to:" + ARCHIVE_TITLE)
+    # TODO: calculate the real time
+    print("Build took " + str(passedtime) + " seconds")
+
+
 def run():
     """Run the main program"""
     global TOTAL_TASKS
     chapters_list = read_chapters_file(CONFIG_FILE)
-    TOTAL_TASKS = 5 * count_chapters(chapters_list) + 2
+    TOTAL_TASKS = TASKS_PER_CHAPTER * count_chapters(chapters_list) + 2 + 1
     print_chapters(chapters_list, BOOK_TITLE)
     build_chapters(chapters_list,)
     build_book(BOOK_TITLE)
+    create_archive(chapters_list)
+    print_summary(42)
     return(0)
 
 
