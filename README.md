@@ -7,6 +7,8 @@ What is it does:
  * Convert the slides to a printer-friendly format (no slide transitions, 6 slides per page, less colors)
  * Build a main "course handouts book" with all the slides (one chapter per beamer slide set, title page, introduction, table of contents,...)
  * Create a .zip archive with all the documents
+ 
+The scripts starts multiple processes in parallel to build all slide sets at the same time. This results in a big speedup on multi-core systems.
 
 Dependencies:
 -------------
