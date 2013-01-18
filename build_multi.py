@@ -15,7 +15,7 @@ import signal
 import glob
 import zipfile
 import zlib
-from threading import  Thread  
+from threading import Thread
 from multiprocessing import Process
 
 """User configurable settings:
@@ -112,12 +112,16 @@ def print_progress_counter(command):
 
 
 def builder_task(current_chapter):
+    """Function to build a chapter, started as a process """
     try:
-        #os.chdir(current_chapter)  -output-directory=C:/pdfout -aux-directory=C:/temp
-        timed_cmd(("pdflatex --output-directory=./Handouts" + " " + SCRIPTPATH + "/" + current_chapter + "/" + current_chapter + ".tex"), 10)
-        timed_cmd(("pdflatex --output-directory=./Handouts" + " " + SCRIPTPATH + "/" + current_chapter + "/" + current_chapter + ".tex"), 10)
-        timed_cmd(("pdfjam-slides6up --outfile ./Handouts" + " ./Handouts/" + current_chapter + ".pdf "
-            + "--nup 2x3 --suffix 6pp -q"), 10)
+        timed_cmd(("pdflatex --output-directory=./Handouts" + " "
+          + SCRIPTPATH + "/" + current_chapter + "/" + current_chapter
+          + ".tex"), 10)
+        timed_cmd(("pdflatex --output-directory=./Handouts" + " "
+          + SCRIPTPATH + "/" + current_chapter + "/" + current_chapter
+          + ".tex"), 10)
+        timed_cmd(("pdfjam-slides6up --outfile ./Handouts" + " ./Handouts/"
+          + current_chapter + ".pdf " + "--nup 2x3 --suffix 6pp -q"), 10)
     except OSError:
         print("Error: unable to open test folder")
         print("Check your config file")

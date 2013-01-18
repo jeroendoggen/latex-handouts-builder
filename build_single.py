@@ -1,6 +1,6 @@
 """ Build Script for Latex-beamer based course handouts
 
-Use one process, helpfull for debugging build errors.
+Use one process, helpful for debugging build errors.
 
 """
 
