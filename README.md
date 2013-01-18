@@ -13,17 +13,16 @@ Several sets of LaTeX-beamer slides are build:
 
 These slide handouts are merged in one 'ExampleHandoutsBook.pdf' file, with a title page, introduction, table of contents,...
 
-All these documents are compressed in a single .zip archive. (and uploaded to the course website)
+All these documents are compressed in a single 'ExampleHandoutsBook.zip' archive. (and uploaded to the course website)
 
 Dependencies:
 -------------
  * pdflatex
  * pdfjam
- * zip
 
 typical output:
 ---------------
-PDF output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.pdf?raw=true
+Output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.zip?raw=true
 
     user@computer~/latex-handouts-builder$ python build.py 
     The following files will be processed:
@@ -32,24 +31,24 @@ PDF output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/H
     3. chap3.tex
     4. ExampleHandoutsBook.tex
 
-    1/17 pdflatex chap1
-    2/17 pdflatex chap1
-    3/17 pdfjam-slides6up chap1.pdf --nup 2x3 --suffix 6pp -q
-    4/17 mv chap1.pdf ../Handouts
-    5/17 mv chap1-6pp.pdf ../Handouts
-    6/17 pdflatex chap2
-    7/17 pdflatex chap2
-    8/17 pdfjam-slides6up chap2.pdf --nup 2x3 --suffix 6pp -q
-    9/17 mv chap2.pdf ../Handouts
-    10/17 mv chap2-6pp.pdf ../Handouts
-    11/17 pdflatex chap3
-    12/17 pdflatex chap3
-    13/17 pdfjam-slides6up chap3.pdf --nup 2x3 --suffix 6pp -q
-    14/17 mv chap3.pdf ../Handouts
-    15/17 mv chap3-6pp.pdf ../Handouts
-    16/17 pdflatex ExampleHandoutsBook
-    17/17 pdflatex ExampleHandoutsBook
-    Build finished
-    Output written to: ExampleHandoutsBook.pdf
+    1/18 pdflatex chap1
+    2/18 pdflatex chap1
+    3/18 pdfjam-slides6up chap1.pdf --nup 2x3 --suffix 6pp -q
+    4/18 mv chap1.pdf ../Handouts
+    5/18 mv chap1-6pp.pdf ../Handouts
+    6/18 pdflatex chap2
+    7/18 pdflatex chap2
+    8/18 pdfjam-slides6up chap2.pdf --nup 2x3 --suffix 6pp -q
+    9/18 mv chap2.pdf ../Handouts
+    10/18 mv chap2-6pp.pdf ../Handouts
+    11/18 pdflatex chap3
+    12/18 pdflatex chap3
+    13/18 pdfjam-slides6up chap3.pdf --nup 2x3 --suffix 6pp -q
+    14/18 mv chap3.pdf ../Handouts
+    15/18 mv chap3-6pp.pdf ../Handouts
+    16/18 pdflatex ExampleHandoutsBook
+    17/18 pdflatex ExampleHandoutsBook
+    Output written to: ExampleHandoutsBook.zip
+    Build took 42 seconds
 
 
