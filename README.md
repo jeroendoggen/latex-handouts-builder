@@ -3,9 +3,9 @@ LaTeX Handouts Builder
 Build Script for Latex-beamer based course handouts
 
 What is it does:
- * Build LaTeX several beamer slide sets
+ * Build multiple LaTeX beamer slide sets with one command: ``python build.py``
  * Convert the slides to a printer-friendly format (no slide transitions, 6 slides per page, less colors)
- * Build a main "course handouts book" with all the slides (title page, introduction, table of contents,...)
+ * Build a main "course handouts book" with all the slides (one chapter per beamer slide set, title page, introduction, table of contents,...)
  * Create a .zip archive with all the documents
 
 Dependencies:
@@ -15,7 +15,7 @@ Dependencies:
 
 Typical output:
 ---------------
-Zip output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.zip?raw=true
+Example .zip output: https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.zip?raw=true
 
     user@computer~/latex-handouts-builder$ python build.py 
     The following files will be processed:
