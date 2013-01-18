@@ -12,8 +12,8 @@ The scripts starts multiple processes in parallel to build all slide sets at the
 
 Dependencies:
 -------------
- * pdflatex
- * pdfjam
+ * pdflatex - PDF output from TeX
+ * pdfjam - A shell script for manipulating PDF files
 
 Typical output:
 ---------------
