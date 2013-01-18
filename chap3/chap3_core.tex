@@ -1,0 +1,96 @@
+\title[Short Title]{Long Title}
+\subtitle{Subtitle comes here}
+\author{The author}
+\institute{The Institute}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\AtBeginSubsection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+
+
+\section{A Section}
+
+\begin{frame} 
+\frametitle{Start}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{A New Slide}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{An other Slide}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\section{An New Section}
+\begin{frame} 
+\frametitle{Start Again}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{The Last Slide of this section}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\section{The last Section}
+\begin{frame} 
+\frametitle{Start Again}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{The Last Slide}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+ \item The end!
+\end{itemize}
+\end{frame}
+
+\end{document}
