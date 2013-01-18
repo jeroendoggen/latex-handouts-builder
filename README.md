@@ -19,29 +19,15 @@ Example .zip output: https://github.com/jeroendoggen/latex-handouts-builder/blob
 
     user@computer~/latex-handouts-builder$ python build.py 
     The following files will be processed:
-    1. chap1.tex
-    2. chap2.tex
-    3. chap3.tex
-    4. ExampleHandoutsBook.tex
-
-    1/18 pdflatex chap1
-    2/18 pdflatex chap1
-    3/18 pdfjam-slides6up chap1.pdf --nup 2x3 --suffix 6pp -q
-    4/18 mv chap1.pdf ../Handouts
-    5/18 mv chap1-6pp.pdf ../Handouts
-    6/18 pdflatex chap2
-    7/18 pdflatex chap2
-    8/18 pdfjam-slides6up chap2.pdf --nup 2x3 --suffix 6pp -q
-    9/18 mv chap2.pdf ../Handouts
-    10/18 mv chap2-6pp.pdf ../Handouts
-    11/18 pdflatex chap3
-    12/18 pdflatex chap3
-    13/18 pdfjam-slides6up chap3.pdf --nup 2x3 --suffix 6pp -q
-    14/18 mv chap3.pdf ../Handouts
-    15/18 mv chap3-6pp.pdf ../Handouts
-    16/18 pdflatex ExampleHandoutsBook
-    17/18 pdflatex ExampleHandoutsBook
+     1. chap1.tex
+     2. chap2.tex
+     3. chap3.tex
+     4. chap4.tex
+     5. chap5.tex
+     6. chap6.tex
+     7. chap7.tex
+     8. chap8.tex
+     9. ExampleHandoutsBook.tex
+    
     Output written to: ExampleHandoutsBook.zip
-    Build took 17 seconds
-
-
+    Build took 10 seconds
