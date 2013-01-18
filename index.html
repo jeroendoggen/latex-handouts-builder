@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Latex-handouts-builder : latex-handouts-builder" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Latex-handouts-builder</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jeroendoggen/latex-handouts-builder">View on GitHub</a>
+
+          <h1 id="project_title">Latex-handouts-builder</h1>
+          <h2 id="project_tagline">latex-handouts-builder</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jeroendoggen/latex-handouts-builder/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jeroendoggen/latex-handouts-builder/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>LaTeX Handouts Builder</h1>
+
+<p>Build Script for Latex-beamer based course handouts</p>
+
+<p>What is it does:</p>
+
+<ul>
+<li>Build LaTeX several beamer slide sets</li>
+<li>Convert the slides to a printer-friendly format (no slide transitions, 6 slides per page, less colors)</li>
+<li>Build a main "course handouts book" with all the slides (title page, introduction, table of contents,...)</li>
+<li>Create a .zip archive with all the documents</li>
+</ul><h2>Dependencies:</h2>
+
+<ul>
+<li>pdflatex</li>
+<li>pdfjam</li>
+</ul><h2>Typical output:</h2>
+
+<p>Zip output: <a href="https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.zip?raw=true">https://github.com/jeroendoggen/latex-handouts-builder/blob/master/Handouts/ExampleHandoutsBook.zip?raw=true</a></p>
+
+<pre><code>user@computer~/latex-handouts-builder$ python build.py 
+The following files will be processed:
+1. chap1.tex
+2. chap2.tex
+3. chap3.tex
+4. ExampleHandoutsBook.tex
+
+1/18 pdflatex chap1
+2/18 pdflatex chap1
+3/18 pdfjam-slides6up chap1.pdf --nup 2x3 --suffix 6pp -q
+4/18 mv chap1.pdf ../Handouts
+5/18 mv chap1-6pp.pdf ../Handouts
+6/18 pdflatex chap2
+7/18 pdflatex chap2
+8/18 pdfjam-slides6up chap2.pdf --nup 2x3 --suffix 6pp -q
+9/18 mv chap2.pdf ../Handouts
+10/18 mv chap2-6pp.pdf ../Handouts
+11/18 pdflatex chap3
+12/18 pdflatex chap3
+13/18 pdfjam-slides6up chap3.pdf --nup 2x3 --suffix 6pp -q
+14/18 mv chap3.pdf ../Handouts
+15/18 mv chap3-6pp.pdf ../Handouts
+16/18 pdflatex ExampleHandoutsBook
+17/18 pdflatex ExampleHandoutsBook
+Output written to: ExampleHandoutsBook.zip
+Build took 17 seconds
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Latex-handouts-builder maintained by <a href="https://github.com/jeroendoggen">jeroendoggen</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
