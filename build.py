@@ -31,15 +31,29 @@ import glob
 import zipfile
 import zlib
 
+"""User configurable settings:
+CONFIG_FILE = the file with the list of chapters
+HANDOUTSPATH = where do we want to place pdf document (and the final archive)
+BOOK_TITLE = title of the handouts book tex file (without .tex)
+ARCHIVE_TITLE = name of the final archive
+
+"""
 CONFIG_FILE = "chapters.conf"
-SCRIPTPATH = os.getcwd()
 HANDOUTSPATH = "Handouts"
-FAILED_BUILDS = []
 BOOK_TITLE = "ExampleHandoutsBook"
 ARCHIVE_TITLE = "ExampleHandoutsBook.zip"
+
+"""Global variables
+TODO: make them local
+"""
+FAILED_BUILDS = []
+SCRIPTPATH = os.getcwd()
+FAILED_BUILDS = []
 COUNTER = 0
 TOTAL_TASKS = 0
 TASKS_PER_CHAPTER = 5
+START_TIME = 0
+STOP_TIME = 0
 
 
 def read_chapters_file(config_file):
@@ -170,38 +184,51 @@ def create_archive(chapters_list):
         os.chdir(SCRIPTPATH)
         os.chdir("Handouts")
         compression = zipfile.ZIP_DEFLATED
-        zf = zipfile.ZipFile(ARCHIVE_TITLE, mode='w')
+        archive = zipfile.ZipFile(ARCHIVE_TITLE, mode='w')
         try:
             for index, current_chapter in enumerate(chapters_list):
-                zf.write(current_chapter + ".pdf", compress_type=compression)
+                archive.write(current_chapter + ".pdf",
+                  compress_type=compression)
                 os.remove(current_chapter + ".pdf")
                 os.remove(current_chapter + "-6pp.pdf")
-            zf.write(BOOK_TITLE + ".pdf", compress_type=compression)
+            archive.write(BOOK_TITLE + ".pdf", compress_type=compression)
             os.remove(BOOK_TITLE + ".pdf")
         finally:
-            zf.close()
-        print
+            archive.close()
     except OSError:
         print("Error: unable build the archive: " + ARCHIVE_TITLE)
         FAILED_BUILDS.append("Failed to build archive:" + ARCHIVE_TITLE)
 
 
 def print_summary(passedtime):
-    print("Output written to:" + ARCHIVE_TITLE)
-    # TODO: calculate the real time
+    """Print a summary of the build process"""
+    print("Output written to: " + ARCHIVE_TITLE)
     print("Build took " + str(passedtime) + " seconds")
+
+
+def timing(action):
+    """Calculate the runtime of the program in seconds"""
+    if action == "start":
+        global START_TIME
+        START_TIME = datetime.datetime.now()
+    if action == "stop":
+        global STOP_TIME
+        STOP_TIME = datetime.datetime.now()
+        passedtime = STOP_TIME - START_TIME
+        return (passedtime.seconds)
 
 
 def run():
     """Run the main program"""
     global TOTAL_TASKS
+    timing("start")
     chapters_list = read_chapters_file(CONFIG_FILE)
     TOTAL_TASKS = TASKS_PER_CHAPTER * count_chapters(chapters_list) + 2 + 1
     print_chapters(chapters_list, BOOK_TITLE)
     build_chapters(chapters_list,)
     build_book(BOOK_TITLE)
     create_archive(chapters_list)
-    print_summary(42)
+    print_summary(timing("stop"))
     return(0)
 
 
