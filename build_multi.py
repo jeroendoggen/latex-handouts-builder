@@ -94,6 +94,7 @@ def timed_cmd(command, timeout):
         now = datetime.datetime.now()
         time.sleep(1)
         if (now - start).seconds > timeout:
+            print (command)
             print ("Process timeout")
             os.kill(process.pid, signal.SIGKILL)
             os.waitpid(-1, os.WNOHANG)
@@ -141,6 +142,7 @@ def build_chapters(chapters_list):
 def build_book(book_title):
     """Build the handouts book"""
     try:
+        os.chdir(SCRIPTPATH)
         os.chdir("Handouts")
         timed_cmd(("pdflatex" + " " + book_title), 10)
         timed_cmd(("pdflatex" + " " + book_title), 10)
