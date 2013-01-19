@@ -22,12 +22,14 @@ CONFIG_FILE = the file with the list of chapters
 HANDOUTSPATH = where do we want to place pdf document (and the final archive)
 BOOK_TITLE = title of the handouts book tex file (without .tex !)
 ARCHIVE_TITLE = name of the final archive (with .zip !)
+BUILD_TIMEOUT = maximum time for a pdflatex build (default: 30s)
 
 """
 CONFIG_FILE = "chapters.conf"
 HANDOUTSPATH = "Handouts"
 BOOK_TITLE = "ExampleHandoutsBook"
 ARCHIVE_TITLE = "ExampleHandoutsBook.zip"
+BUILD_TIMEOUT = 30
 
 """Global variables
 TODO: make them local
@@ -81,11 +83,14 @@ def print_chapters(chapters_list, book_title):
     print ("")
 
 
-def timed_cmd(command, timeout):
+def timed_cmd(command, timeout, path):
     """Call a cmd and kill it after 'timeout' seconds"""
     cmd = command.split(" ")
     #print_progress_counter(command)
+    #print (path)
     #print (command)
+    os.chdir(path)
+    #print(os.getcwd())
     start = datetime.datetime.now()
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
@@ -114,14 +119,12 @@ def print_progress_counter(command):
 def builder_task(current_chapter):
     """Function to build a chapter, started as a process """
     try:
-        timed_cmd(("pdflatex --output-directory=./Handouts" + " "
-          + SCRIPTPATH + "/" + current_chapter + "/" + current_chapter
-          + ".tex"), BUILD_TIMEOUT)
-        timed_cmd(("pdflatex --output-directory=./Handouts" + " "
-          + SCRIPTPATH + "/" + current_chapter + "/" + current_chapter
-          + ".tex"), BUILD_TIMEOUT)
-        timed_cmd(("pdfjam-slides6up --outfile ./Handouts" + " ./Handouts/"
-          + current_chapter + ".pdf " + "--nup 2x3 --suffix 6pp -q"), BUILD_TIMEOUT)
+        timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
+          + ".tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
+        timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
+          + ".tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
+        timed_cmd(("pdfjam-slides6up " + current_chapter + ".pdf "
+          + "--nup 2x3 --suffix 6pp -q"), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
     except OSError:
         print("Error: unable to open test folder")
         print("Check your config file")
@@ -148,8 +151,8 @@ def build_book(book_title):
     try:
         os.chdir(SCRIPTPATH)
         os.chdir("Handouts")
-        timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT)
-        timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT)
+        timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
+        timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
     except OSError:
         print("Error: unable build the final book")
         FAILED_BUILDS.append("The book:" + book_title)
@@ -172,6 +175,21 @@ def cleanup():
     for filename in files_grabbed:
         #print(filename)
         os.remove(filename)
+
+def cleanup_chapters(chapters_list):
+    """Cleanup all the chapters"""
+    for index, current_chapter in enumerate(chapters_list):
+        try:
+            os.chdir(SCRIPTPATH + "/" + current_chapter)
+            cleanup()
+        except OSError:
+            print("Error: unable to open chapter folder: " + current_chapter)
+    try:
+        os.chdir(SCRIPTPATH + "/" + HANDOUTSPATH)
+        cleanup()
+    except OSError:
+        print("Error: unable to open the handouts folder during cleanup")
+        print("This should never happen...")
 
 
 def create_archive(chapters_list):
@@ -225,7 +243,8 @@ def run():
     build_book(BOOK_TITLE)
     create_archive(chapters_list)
     print_summary(timing("stop"))
-    cleanup()
+    #time.sleep(1)
+    cleanup_chapters(chapters_list)
     return(0)
 
 
