@@ -123,6 +123,10 @@ def builder_task(current_chapter):
           + ".tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
         timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
           + ".tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
+        timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
+          + "_pres.tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
+        timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
+          + "_pres.tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
         timed_cmd(("pdfjam-slides6up " + current_chapter + ".pdf "
           + "--nup 2x3 --suffix 6pp -q"), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
     except OSError:
