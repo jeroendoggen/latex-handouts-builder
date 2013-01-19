@@ -15,14 +15,13 @@ import signal
 import glob
 import zipfile
 import zlib
-from threading import Thread
 from multiprocessing import Process
 
 """User configurable settings:
 CONFIG_FILE = the file with the list of chapters
 HANDOUTSPATH = where do we want to place pdf document (and the final archive)
-BOOK_TITLE = title of the handouts book tex file (without .tex)
-ARCHIVE_TITLE = name of the final archive
+BOOK_TITLE = title of the handouts book tex file (without .tex !)
+ARCHIVE_TITLE = name of the final archive (with .zip !)
 
 """
 CONFIG_FILE = "chapters.conf"
@@ -41,6 +40,7 @@ TOTAL_TASKS = 0
 TASKS_PER_CHAPTER = 5
 START_TIME = 0
 STOP_TIME = 0
+BUILD_TIMEOUT = 10
 
 
 def read_chapters_file(config_file):
@@ -116,12 +116,12 @@ def builder_task(current_chapter):
     try:
         timed_cmd(("pdflatex --output-directory=./Handouts" + " "
           + SCRIPTPATH + "/" + current_chapter + "/" + current_chapter
-          + ".tex"), 10)
+          + ".tex"), BUILD_TIMEOUT)
         timed_cmd(("pdflatex --output-directory=./Handouts" + " "
           + SCRIPTPATH + "/" + current_chapter + "/" + current_chapter
-          + ".tex"), 10)
+          + ".tex"), BUILD_TIMEOUT)
         timed_cmd(("pdfjam-slides6up --outfile ./Handouts" + " ./Handouts/"
-          + current_chapter + ".pdf " + "--nup 2x3 --suffix 6pp -q"), 10)
+          + current_chapter + ".pdf " + "--nup 2x3 --suffix 6pp -q"), BUILD_TIMEOUT)
     except OSError:
         print("Error: unable to open test folder")
         print("Check your config file")
@@ -140,7 +140,7 @@ def build_chapters(chapters_list):
         index.start()
     #Wait for all processes to finish (or just the one that is started last??)
     while (index.is_alive()):
-        pass
+        time.sleep(1)
 
 
 def build_book(book_title):
@@ -148,8 +148,8 @@ def build_book(book_title):
     try:
         os.chdir(SCRIPTPATH)
         os.chdir("Handouts")
-        timed_cmd(("pdflatex" + " " + book_title), 10)
-        timed_cmd(("pdflatex" + " " + book_title), 10)
+        timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT)
+        timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT)
     except OSError:
         print("Error: unable build the final book")
         FAILED_BUILDS.append("The book:" + book_title)
@@ -185,10 +185,10 @@ def create_archive(chapters_list):
             for index, current_chapter in enumerate(chapters_list):
                 archive.write(current_chapter + ".pdf",
                   compress_type=compression)
-                os.remove(current_chapter + ".pdf")
-                os.remove(current_chapter + "-6pp.pdf")
+                #os.remove(current_chapter + ".pdf")
+                #os.remove(current_chapter + "-6pp.pdf")
             archive.write(BOOK_TITLE + ".pdf", compress_type=compression)
-            os.remove(BOOK_TITLE + ".pdf")
+            #os.remove(BOOK_TITLE + ".pdf")
         finally:
             archive.close()
     except OSError:

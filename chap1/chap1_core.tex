@@ -8,22 +8,21 @@
 
 \maketitle
 
+\AtBeginSection[]  
+  {  
+    \begin{frame}<*>{beamer} 
+      \frametitle{Outline}
+      \tableofcontents[currentsection,currentsubsection]  
+    \end{frame}  
+  }
+
 \AtBeginSubsection[]
 {
-  \begin{frame}<beamer>
+  \begin{frame}<*><beamer>
     \frametitle{Outline}
     \tableofcontents[currentsection,currentsubsection]
   \end{frame}
 }
-
-\AtBeginSection[]
-{
-  \begin{frame}<beamer>
-    \frametitle{Outline}
-    \tableofcontents[currentsection,currentsubsection]
-  \end{frame}
-}
-
 
 \section{A Section}
 
@@ -60,9 +59,27 @@
 \end{itemize}
 \end{frame}
 
+\begin{frame} 
+\frametitle{An other Slide Again}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
 \section{An New Section}
 \begin{frame} 
 \frametitle{Start Again}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{An other Slide}
 \begin{itemize}[<+->]
  \item Text
  \item More text
@@ -82,6 +99,42 @@
 \section{The last Section}
 \begin{frame} 
 \frametitle{Start Again}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{An other Slide}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{An other Slide Again}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{An other Slide}
+\begin{itemize}[<+->]
+ \item Text
+ \item More text
+ \item More text again
+\end{itemize}
+\end{frame}
+
+\begin{frame} 
+\frametitle{An other Slide Again}
 \begin{itemize}[<+->]
  \item Text
  \item More text

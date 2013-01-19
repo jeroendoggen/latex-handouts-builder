@@ -1,5 +1,12 @@
 \documentclass{book}
-\title{Example Book for lecture  handouts}
+% \title{}
+% \author{Jeroen Doggen}
+
+\title{\LARGE \textbf{\uppercase{ Example Book for Lecture  Handouts}}}
+
+\author{\textbf{Jeroen Doggen}  \\
+        \texttt{jeroendoggen@gmail.com}
+}
 
 \usepackage{pdfpages}
 \usepackage{url}
@@ -12,23 +19,21 @@
 \chapter*{Introduction}
 \label{chap_intro}
 
-This book is created with the ``LaTeX Handouts Builder'' Python script.
+This book is created with ''\LaTeX -Handouts Builder'', a Python script to create \LaTeX-beamer based course handouts.
 
 \noindent More info: \url{https://github.com/jeroendoggen/latex-handouts-builder}
 
-\noindent The script is still a work in progress. The features are based on a similar Bash script that I have been using for several years.
 
-\section*{Program flow}
+\section*{What is it does:}
 
 \begin{itemize}
-\item Run one command 'build.py'
-\item Several sets of LaTeX-beamer slides are build:
-\item pdf documents are created
-\item Different versions: 4/6 slides per page, handout version with printer friendly colors
-\item These slide handouts are merged in one 'handouts-LaTeX-book' with a title page, introduction, table of contents,...
-\item All these documents are compressed in a single .zip archive. (and uploaded to the course website)
+\item Build multiple LaTeX beamer slide sets with one command: ``python build.py``
+\item Convert the slides to a printer-friendly format (no slide transitions, 6 slides per page, less colors)
+\item Build a main "course handouts book" with all the slides (one chapter per beamer slide set, title page, introduction, table of contents,...)
+\item Create a .zip archive with all the documents
 \end{itemize}
 
+\noindent The scripts starts multiple processes in parallel to build all slide sets at the same time. This results in a big speedup on multi-core systems.
 
 \part{The First Chapter}
 \includepdf[pages={-}]{chap1-6pp.pdf}
