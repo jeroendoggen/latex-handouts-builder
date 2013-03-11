@@ -119,13 +119,13 @@ def print_progress_counter(command):
 def builder_task(current_chapter):
     """Function to build a chapter, started as a process """
     try:
-        timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
+        timed_cmd(("pdflatex --output-directory=../" + HANDOUTSPATH + " " + current_chapter
           + ".tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
-        timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
+        timed_cmd(("pdflatex --output-directory=../" + HANDOUTSPATH + " " + current_chapter
           + ".tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
-        timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
+        timed_cmd(("pdflatex --output-directory=../" + HANDOUTSPATH + " " + current_chapter
           + "_pres.tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
-        timed_cmd(("pdflatex --output-directory=../Handouts" + " " + current_chapter
+        timed_cmd(("pdflatex --output-directory=../" + HANDOUTSPATH + " " + current_chapter
           + "_pres.tex"), BUILD_TIMEOUT, SCRIPTPATH + "/" + current_chapter)
         timed_cmd(("pdfjam-slides6up " + current_chapter + ".pdf "
           + "--nup 2x3 --suffix 6pp -q"), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
@@ -154,7 +154,7 @@ def build_book(book_title):
     """Build the handouts book"""
     try:
         os.chdir(SCRIPTPATH)
-        os.chdir("Handouts")
+        os.chdir(HANDOUTSPATH)
         timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
         timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
     except OSError:
@@ -200,7 +200,7 @@ def create_archive(chapters_list):
     """Build the archive with all slides and the book"""
     try:
         os.chdir(SCRIPTPATH)
-        os.chdir("Handouts")
+        os.chdir(HANDOUTSPATH)
         compression = zipfile.ZIP_DEFLATED
         archive = zipfile.ZipFile(ARCHIVE_TITLE, mode='w')
         try:
