@@ -42,7 +42,6 @@ TOTAL_TASKS = 0
 TASKS_PER_CHAPTER = 5
 START_TIME = 0
 STOP_TIME = 0
-BUILD_TIMEOUT = 10
 
 
 def read_chapters_file(config_file):
