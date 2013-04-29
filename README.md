@@ -17,7 +17,7 @@ Dependencies:
 
 Typical output:
 ---------------
-Parallel build: (using multiple processes, fastests)
+#### Parallel build: (using multiple processes, fastests)
 
     user@computer~/latex-handouts-builder$ python build.py 
     The following files will be processed:
@@ -53,7 +53,7 @@ Parallel build: (using multiple processes, fastests)
     Output written to: ExampleHandoutsBook.zip
     Build took 20 seconds
     
-Sequential build: (easier for debugging LaTeX errors but slower)
+#### Sequential build: (easier for debugging LaTeX errors, but slower)
 
     The following files will be processed:
      1. chap1.tex
