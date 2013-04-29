@@ -99,7 +99,7 @@ def timed_cmd(command, timeout, path):
 
     while process.poll() is None:
         now = datetime.datetime.now()
-        time.sleep(1)
+        time.sleep(0.1)
         if (now - start).seconds > timeout:
             print (command)
             print ("Process timeout")
@@ -159,7 +159,7 @@ def build_chapters(chapters_list):
         print(q.qsize()+1, end="/")
         print(total)
         while (top.is_alive()):
-            time.sleep(1)
+            time.sleep(0.1)
             
 
 
