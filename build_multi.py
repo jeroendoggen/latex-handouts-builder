@@ -15,6 +15,7 @@ import signal
 import glob
 import zipfile
 import zlib
+import Queue
 from multiprocessing import Process
 
 """User configurable settings:
@@ -42,6 +43,8 @@ TOTAL_TASKS = 0
 TASKS_PER_CHAPTER = 5
 START_TIME = 0
 STOP_TIME = 0
+
+PROCESS_COUNTER = 0
 
 
 def read_chapters_file(config_file):
@@ -141,12 +144,23 @@ def builder_task(current_chapter):
 
 def build_chapters(chapters_list):
     """Build all the chapters and move to handouts folder"""
+    q = Queue.Queue()
     for index, current_chapter in enumerate(chapters_list):
+        print("Building chapter: " + current_chapter)
         index = Process(target=builder_task, args=(current_chapter,))
         index.start()
-    #Wait for all processes to finish (or just the one that is started last??)
-    while (index.is_alive()):
-        time.sleep(1)
+        q.put(index)
+    #Wait for all processes to finish and print a down counter
+    print("")
+    print("Remaining processes:")
+    total = q.qsize()
+    while (q.qsize() > 0):
+        top = q.get()
+        print(q.qsize()+1, end="/")
+        print(total)
+        while (top.is_alive()):
+            time.sleep(1)
+            
 
 
 def build_book(book_title):
@@ -154,6 +168,7 @@ def build_book(book_title):
     try:
         os.chdir(SCRIPTPATH)
         os.chdir(HANDOUTSPATH)
+        print("Building the final book: " + book_title)
         timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
         timed_cmd(("pdflatex" + " " + book_title), BUILD_TIMEOUT, SCRIPTPATH + "/" + HANDOUTSPATH)
     except OSError:
