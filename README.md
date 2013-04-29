@@ -51,7 +51,7 @@ Typical output:
     1/8
     Building the final book: ExampleHandoutsBook
     Output written to: ExampleHandoutsBook.zip
-    Build took 20 seconds
+    Build took 17 seconds
     
 #### Sequential build: (easier for debugging LaTeX errors, but slower)
 
