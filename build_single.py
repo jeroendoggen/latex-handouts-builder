@@ -1,6 +1,6 @@
 """ Build Script for Latex-beamer based course handouts
 
-Use one process, helpful for debugging build errors.
+Using one process: helpful for debugging LaTeX build errors.
 
 """
 
@@ -27,19 +27,22 @@ CONFIG_FILE = "chapters.conf"
 HANDOUTSPATH = "Handouts"
 BOOK_TITLE = "ExampleHandoutsBook"
 BOOK_TITLE_NOTES = "ExampleHandoutsBookNotes"
+BOOK_TITLE_2PP = "ExampleHandoutsBookTwo"
 ARCHIVE_TITLE = "ExampleHandoutsBook.zip"
 
 """Global variables
 TODO: make them local
 """
 FAILED_BUILDS = []
+FAILED_BUILD_COUNTER = 0
 SCRIPTPATH = os.getcwd()
 FAILED_BUILDS = []
 COUNTER = 0
 TOTAL_TASKS = 0
-TASKS_PER_CHAPTER = 8
+TASKS_PER_CHAPTER = 11
 START_TIME = 0
 STOP_TIME = 0
+
 
 
 def read_chapters_file(config_file):
@@ -82,6 +85,7 @@ def print_chapters(chapters_list, book_title):
 
 def timed_cmd(command, timeout):
     """Call a cmd and kill it after 'timeout' seconds"""
+    global FAILED_BUILD_COUNTER
     cmd = command.split(" ")
     print_progress_counter(command)
     print (command)
@@ -91,12 +95,13 @@ def timed_cmd(command, timeout):
 
     while process.poll() is None:
         now = datetime.datetime.now()
-        time.sleep(1)
         if (now - start).seconds > timeout:
             print ("Process timeout")
             os.kill(process.pid, signal.SIGKILL)
             os.waitpid(-1, os.WNOHANG)
+            FAILED_BUILD_COUNTER = FAILED_BUILD_COUNTER + 1
             return None
+        time.sleep(0.01)
     return process.poll()
 
 
@@ -111,6 +116,7 @@ def print_progress_counter(command):
 
 def build_chapters(chapters_list):
     """Build all the chapters and move to handouts folder"""
+    global FAILED_BUILD_COUNTER
     for index, current_chapter in enumerate(chapters_list):
         try:
             os.chdir(current_chapter)
@@ -127,11 +133,13 @@ def build_chapters(chapters_list):
             print("Error: unable to open test folder")
             print("Check your config file")
             FAILED_BUILDS.append(current_chapter)
+            FAILED_BUILD_COUNTER = FAILED_BUILD_COUNTER + 1
         try:
             os.chdir(SCRIPTPATH)
         except OSError:
             print("Error: unable to open the script folder")
             print("This should never happen...")
+            FAILED_BUILD_COUNTER = FAILED_BUILD_COUNTER + 1
 
 
 def build_chapters_handouts(chapters_list):
@@ -140,6 +148,27 @@ def build_chapters_handouts(chapters_list):
         try:
             os.chdir(current_chapter)
             current_chapter = current_chapter + "_handout"
+            timed_cmd(("pdflatex" + " " + current_chapter ), 10)
+            timed_cmd(("pdflatex" + " " + current_chapter ), 10)
+            timed_cmd(("mv" + " " + current_chapter + ".pdf"
+              + " " + "../" + HANDOUTSPATH), 10)
+            cleanup()
+        except OSError:
+            print("Error: unable to open test folder")
+            print("Check your config file")
+            FAILED_BUILDS.append(current_chapter)
+        try:
+            os.chdir(SCRIPTPATH)
+        except OSError:
+            print("Error: unable to open the script folder")
+            print("This should never happen...")
+            
+def build_chapters_2pp(chapters_list):
+    """Build all the chapters and move to handouts folder"""
+    for index, current_chapter in enumerate(chapters_list):
+        try:
+            os.chdir(current_chapter)
+            current_chapter = current_chapter + "_2pp"
             timed_cmd(("pdflatex" + " " + current_chapter ), 10)
             timed_cmd(("pdflatex" + " " + current_chapter ), 10)
             timed_cmd(("mv" + " " + current_chapter + ".pdf"
@@ -170,10 +199,10 @@ def build_book(book_title):
 
 def cleanup():
     """Clean temporary files
-    List taken from Kile
+    List taken from Kile:
     .aux .bit .blg .bbl .lof .log .lot .glo .glx .gxg .gxs .idx .ilg .ind
     .out .url .svn .toc
-     My extra's
+     My extra's:
     *~ .snm .nav
     """
     types = ('*.aux', '*.bit', '*.blg', '*.bbl', '*.lof', '*.log', '*.glo',
@@ -201,6 +230,7 @@ def create_archive(chapters_list):
                 #os.remove(current_chapter + "-6pp.pdf")
             archive.write(BOOK_TITLE + ".pdf", compress_type=compression)
             archive.write(BOOK_TITLE_NOTES + ".pdf", compress_type=compression)
+            archive.write(BOOK_TITLE_2PP + ".pdf", compress_type=compression)
             os.remove(BOOK_TITLE + ".pdf")
         finally:
             archive.close()
@@ -211,6 +241,9 @@ def create_archive(chapters_list):
 
 def print_summary(passedtime):
     """Print a summary of the build process"""
+    global FAILED_BUILD_COUNTER
+    print("Number of errors: ", end="")
+    print(FAILED_BUILD_COUNTER)
     print("Output written to: " + ARCHIVE_TITLE)
     print("Build took " + str(passedtime) + " seconds")
 
@@ -232,12 +265,14 @@ def run():
     global TOTAL_TASKS
     timing("start")
     chapters_list = read_chapters_file(CONFIG_FILE)
-    TOTAL_TASKS = TASKS_PER_CHAPTER * count_chapters(chapters_list) + 2 + 3
+    TOTAL_TASKS = TASKS_PER_CHAPTER * count_chapters(chapters_list) + 2 + 4
     print_chapters(chapters_list, BOOK_TITLE)
     build_chapters(chapters_list,)
     build_chapters_handouts(chapters_list,)
+    build_chapters_2pp(chapters_list,)
     build_book(BOOK_TITLE)
     build_book(BOOK_TITLE_NOTES)
+    build_book(BOOK_TITLE_2PP)
     create_archive(chapters_list)
     print_summary(timing("stop"))
     return(0)
