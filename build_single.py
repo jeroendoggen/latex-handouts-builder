@@ -26,6 +26,7 @@ ARCHIVE_TITLE = name of the final archive
 CONFIG_FILE = "chapters.conf"
 HANDOUTSPATH = "Handouts"
 BOOK_TITLE = "ExampleHandoutsBook"
+BOOK_TITLE_NOTES = "ExampleHandoutsBookNotes"
 ARCHIVE_TITLE = "ExampleHandoutsBook.zip"
 
 """Global variables
@@ -161,6 +162,7 @@ def build_book(book_title):
         timed_cmd(("pdflatex" + " " + book_title), 10)
         timed_cmd(("pdflatex" + " " + book_title), 10)
         cleanup()
+        os.chdir(SCRIPTPATH)
     except OSError:
         print("Error: unable build the final book")
         FAILED_BUILDS.append("The book:" + book_title)
@@ -198,6 +200,7 @@ def create_archive(chapters_list):
                 #os.remove(current_chapter + ".pdf")
                 #os.remove(current_chapter + "-6pp.pdf")
             archive.write(BOOK_TITLE + ".pdf", compress_type=compression)
+            archive.write(BOOK_TITLE_NOTES + ".pdf", compress_type=compression)
             os.remove(BOOK_TITLE + ".pdf")
         finally:
             archive.close()
@@ -229,11 +232,12 @@ def run():
     global TOTAL_TASKS
     timing("start")
     chapters_list = read_chapters_file(CONFIG_FILE)
-    TOTAL_TASKS = TASKS_PER_CHAPTER * count_chapters(chapters_list) + 2 + 1
+    TOTAL_TASKS = TASKS_PER_CHAPTER * count_chapters(chapters_list) + 2 + 3
     print_chapters(chapters_list, BOOK_TITLE)
     build_chapters(chapters_list,)
     build_chapters_handouts(chapters_list,)
     build_book(BOOK_TITLE)
+    build_book(BOOK_TITLE_NOTES)
     create_archive(chapters_list)
     print_summary(timing("stop"))
     return(0)
