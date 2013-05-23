@@ -28,6 +28,7 @@ BOOK_TITLE = "ExampleHandoutsBook"
 BOOK_TITLE_NOTES = "ExampleHandoutsBookNotes"
 BOOK_TITLE_2PP = "ExampleHandoutsBookTwo"
 ARCHIVE_TITLE = "ExampleHandoutsBook.zip"
+NOTES = "_3pp-Notes"
 
 """Global variables
 TODO: make them local
@@ -122,7 +123,7 @@ def build_chapters(chapters_list):
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
             timed_cmd(("pdfjam-slides6up" + " " + current_chapter + ".pdf "
-                       + "--nup 2x3 --suffix 6pp -q"), 10)
+                       + "--nup 2x3 --suffix 6pp -q "), 10)
             timed_cmd(("mv" + " " + current_chapter + ".pdf"
                        + " " + "../" + HANDOUTSPATH), 10)
             timed_cmd(("mv" + " " + current_chapter + "-6pp" + ".pdf"
@@ -146,7 +147,7 @@ def build_chapters_handouts(chapters_list):
     for index, current_chapter in enumerate(chapters_list):
         try:
             os.chdir(current_chapter)
-            current_chapter = current_chapter + "_handout"
+            current_chapter = current_chapter + "_3pp-Notes"
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
             timed_cmd(("mv" + " " + current_chapter + ".pdf"
@@ -227,12 +228,16 @@ def create_archive(chapters_list):
             for index, current_chapter in enumerate(chapters_list):
                 archive.write(current_chapter + ".pdf",
                               compress_type=compression)
-                #os.remove(current_chapter + ".pdf")
-                #os.remove(current_chapter + "-6pp.pdf")
+                os.remove(current_chapter + ".pdf")
+                os.remove(current_chapter + "_3pp-Notes.pdf")
+                os.remove(current_chapter + "_2pp.pdf")
+                os.remove(current_chapter + "-6pp.pdf")
             archive.write(BOOK_TITLE + ".pdf", compress_type=compression)
             archive.write(BOOK_TITLE_NOTES + ".pdf", compress_type=compression)
             archive.write(BOOK_TITLE_2PP + ".pdf", compress_type=compression)
             os.remove(BOOK_TITLE + ".pdf")
+            os.remove(BOOK_TITLE_NOTES + ".pdf")
+            os.remove(BOOK_TITLE_2PP + ".pdf")
         finally:
             archive.close()
     except OSError:

@@ -18,14 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sys
-import build_multi
-#import build_single
+#import build_multi
+import build_single
 
 
 def run():
     """Run the main program"""
-    return(build_multi.run())
-    #return(build_single.run())
+    #return(build_multi.run())
+    return(build_single.run())
 
 
 if __name__ == "__main__":
