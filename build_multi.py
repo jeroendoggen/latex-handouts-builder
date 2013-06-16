@@ -142,7 +142,7 @@ def builder_task(current_chapter):
         print("This should never happen...")
 
 
-def build_chapters(chapters_list):
+def build_chapters_old(chapters_list):
     """Build all the chapters and move to handouts folder"""
     q = Queue.Queue()
     for index, current_chapter in enumerate(chapters_list):
@@ -161,7 +161,36 @@ def build_chapters(chapters_list):
         while (top.is_alive()):
             time.sleep(0.1)
             
-
+def build_chapters(chapters_list):
+    """Build all the chapters and move to handouts folder"""
+    q1 = Queue.Queue()
+    q2 = Queue.Queue()
+    for index, current_chapter in enumerate(chapters_list):
+        print("Building chapter: " + current_chapter)
+        index = Process(target=builder_task, args=(current_chapter,))
+        index.start()
+        q1.put(index)
+    #Wait for all processes to finish and print a down counter
+    print("")
+    print("Remaining processes:")
+    total = q1.qsize()
+    oldsize = q1.qsize() + 1
+    while (q1.qsize() > 0):
+        if (q1.qsize() is not oldsize):
+            print(q1.qsize(), end="/")
+            print(total)
+            oldsize = q1.qsize()
+        while (q1.qsize() > 0):
+            time.sleep(0.05)
+            top = q1.get()
+            if (top.is_alive()):
+                q2.put(top)   
+        while (q2.qsize() > 0):
+            time.sleep(0.05)
+            top = q2.get()
+            if (top.is_alive()):
+                q1.put(top)
+            
 
 def build_book(book_title):
     """Build the handouts book"""
