@@ -28,10 +28,11 @@ BOOK_TITLE = "ExampleHandoutsBook"
 BOOK_TITLE_NOTES = "ExampleHandoutsBookNotes"
 BOOK_TITLE_2PP = "ExampleHandoutsBookTwo"
 ARCHIVE_TITLE = "ExampleHandoutsBook.zip"
-NOTES = "_3pp-Notes"
+NOTES = "_4pp-Notes"
+TWO_PER_PAGE = "_2pp"
 
 """Global variables
-TODO: make them local
+TODO: make them local, using classes
 """
 FAILED_BUILDS = []
 FAILED_BUILD_COUNTER = 0
@@ -42,6 +43,22 @@ TOTAL_TASKS = 0
 TASKS_PER_CHAPTER = 11
 START_TIME = 0
 STOP_TIME = 0
+
+"""Enabling features
+Used to handle course handouts for classes with incomplete slide sets
+TODO: implement this
+"""
+BUILD_HANDOUTS = True
+#BUILD_HANDOUTS = False
+
+BUILD_HANDOUTS_2PP = True
+#BUILD_HANDOUTS_2PP = False
+
+BUILD_HANDOUTS_NOTES = True
+#BUILD_HANDOUTS_NOTES = False
+
+CLEANUP = True
+#CLEANUP = False
 
 
 def read_chapters_file(config_file):
@@ -147,7 +164,7 @@ def build_chapters_handouts(chapters_list):
     for index, current_chapter in enumerate(chapters_list):
         try:
             os.chdir(current_chapter)
-            current_chapter = current_chapter + "_3pp-Notes"
+            current_chapter = current_chapter + NOTES
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
             timed_cmd(("mv" + " " + current_chapter + ".pdf"
@@ -169,7 +186,7 @@ def build_chapters_2pp(chapters_list):
     for index, current_chapter in enumerate(chapters_list):
         try:
             os.chdir(current_chapter)
-            current_chapter = current_chapter + "_2pp"
+            current_chapter = current_chapter + TWO_PER_PAGE
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
             timed_cmd(("mv" + " " + current_chapter + ".pdf"
@@ -228,21 +245,34 @@ def create_archive(chapters_list):
             for index, current_chapter in enumerate(chapters_list):
                 archive.write(current_chapter + ".pdf",
                               compress_type=compression)
-                os.remove(current_chapter + ".pdf")
-                os.remove(current_chapter + "_3pp-Notes.pdf")
-                os.remove(current_chapter + "_2pp.pdf")
-                os.remove(current_chapter + "-6pp.pdf")
-            archive.write(BOOK_TITLE + ".pdf", compress_type=compression)
-            archive.write(BOOK_TITLE_NOTES + ".pdf", compress_type=compression)
-            archive.write(BOOK_TITLE_2PP + ".pdf", compress_type=compression)
-            os.remove(BOOK_TITLE + ".pdf")
-            os.remove(BOOK_TITLE_NOTES + ".pdf")
-            os.remove(BOOK_TITLE_2PP + ".pdf")
+                if(CLEANUP):
+                    clean_chapter_pdf_files(current_chapter)
+            if(BUILD_HANDOUTS):
+                archive.write(BOOK_TITLE + ".pdf", compress_type=compression)
+            if(BUILD_HANDOUTS_NOTES):
+                archive.write(BOOK_TITLE_NOTES + ".pdf", compress_type=compression)
+            if(BUILD_HANDOUTS_2PP):
+                archive.write(BOOK_TITLE_2PP + ".pdf", compress_type=compression)
+            if(CLEANUP):
+                clean_book_pdf_files()
         finally:
             archive.close()
     except OSError:
         print("Error: unable build the archive: " + ARCHIVE_TITLE)
         FAILED_BUILDS.append("Failed to build archive:" + ARCHIVE_TITLE)
+
+
+def clean_chapter_pdf_files(current_chapter):
+    os.remove(current_chapter + ".pdf")
+    os.remove(current_chapter + NOTES + ".pdf")
+    os.remove(current_chapter + "_2pp.pdf")
+    os.remove(current_chapter + "-6pp.pdf")
+
+
+def clean_book_pdf_files():
+    os.remove(BOOK_TITLE + ".pdf")
+    os.remove(BOOK_TITLE_NOTES + ".pdf")
+    os.remove(BOOK_TITLE_2PP + ".pdf")
 
 
 def print_summary(passedtime):
@@ -275,9 +305,12 @@ def run():
     build_chapters(chapters_list,)
     build_chapters_handouts(chapters_list,)
     build_chapters_2pp(chapters_list,)
-    build_book(BOOK_TITLE)
-    build_book(BOOK_TITLE_NOTES)
-    build_book(BOOK_TITLE_2PP)
+    if(BUILD_HANDOUTS):
+        build_book(BOOK_TITLE)
+    if(BUILD_HANDOUTS_NOTES):
+        build_book(BOOK_TITLE_NOTES)
+    if(BUILD_HANDOUTS_2PP):
+        build_book(BOOK_TITLE_2PP)
     create_archive(chapters_list)
     print_summary(timing("stop"))
     return(0)
