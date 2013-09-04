@@ -41,14 +41,14 @@ SCRIPTPATH = os.getcwd()
 FAILED_BUILDS = []
 COUNTER = 0
 TOTAL_TASKS = 0
-TASKS_PER_CHAPTER = 11
+TASKS_PER_CHAPTER = 14
 START_TIME = 0
 STOP_TIME = 0
 
 """Enabling features
 Used to handle course handouts for classes with incomplete slide sets
-TODO: implement this
 """
+
 BUILD_HANDOUTS = True
 #BUILD_HANDOUTS = False
 
@@ -59,7 +59,7 @@ BUILD_HANDOUTS_NOTES = True
 #BUILD_HANDOUTS_NOTES = False
 
 BUILD_PRESENTATION_SLIDES = True
-#BUILD_ORIGINAL_SLIDES = False
+#BUILD_PRESENTATION_SLIDES = False
 
 CLEANUP = True
 #CLEANUP = False
@@ -138,7 +138,7 @@ def print_progress_counter():
 def build_chapters(chapters_list):
     """Build all the chapters and move to handouts folder"""
     global FAILED_BUILD_COUNTER
-    for index, current_chapter in enumerate(chapters_list):
+    for current_chapter in chapters_list:
         try:
             os.chdir(current_chapter)
             timed_cmd(("pdflatex" + " " + current_chapter), 10)
@@ -163,7 +163,7 @@ def build_chapters(chapters_list):
             FAILED_BUILD_COUNTER = FAILED_BUILD_COUNTER + 1
 
 
-def build_chapters_handouts(chapters_list):
+def build_chapters_notes(chapters_list):
     """Build all the chapters and move to handouts folder"""
     for index, current_chapter in enumerate(chapters_list):
         try:
@@ -205,7 +205,8 @@ def build_chapters_2pp(chapters_list):
         except OSError:
             print("Error: unable to open the script folder")
             print("This should never happen...")
-            
+
+
 def build_chapters_presentation(chapters_list):
     """Build all the chapters and move to handouts folder"""
     for index, current_chapter in enumerate(chapters_list):
@@ -267,20 +268,23 @@ def create_archive(chapters_list):
         compression = zipfile.ZIP_DEFLATED
         archive = zipfile.ZipFile(ARCHIVE_TITLE, mode='w')
         try:
-            for index, current_chapter in enumerate(chapters_list):
+            for current_chapter in chapters_list:
                 archive.write(current_chapter + ".pdf",
-                              compress_type=compression)
+                    compress_type=compression)
                 if(BUILD_PRESENTATION_SLIDES):
-		    archive.write(current_chapter + PRESENTATION + ".pdf",
-                              compress_type=compression)
+                    archive.write(current_chapter + PRESENTATION + ".pdf",
+                        compress_type=compression)
                 if(CLEANUP):
                     clean_chapter_pdf_files(current_chapter)
             if(BUILD_HANDOUTS):
-                archive.write(BOOK_TITLE + ".pdf", compress_type=compression)
+                archive.write(BOOK_TITLE + ".pdf",
+                    compress_type=compression)
             if(BUILD_HANDOUTS_NOTES):
-                archive.write(BOOK_TITLE_NOTES + ".pdf", compress_type=compression)
+                archive.write(BOOK_TITLE_NOTES + ".pdf",
+                    compress_type=compression)
             if(BUILD_HANDOUTS_2PP):
-                archive.write(BOOK_TITLE_2PP + ".pdf", compress_type=compression)            
+                archive.write(BOOK_TITLE_2PP + ".pdf",
+                    compress_type=compression)
             if(CLEANUP):
                 clean_book_pdf_files()
         finally:
@@ -291,15 +295,16 @@ def create_archive(chapters_list):
 
 
 def clean_chapter_pdf_files(current_chapter):
+    """Remove temporary pdf files in handouts folder (chapter slides)"""
     os.remove(current_chapter + ".pdf")
     os.remove(current_chapter + NOTES + ".pdf")
     os.remove(current_chapter + "_2pp.pdf")
     os.remove(current_chapter + "-6pp.pdf")
     os.remove(current_chapter + PRESENTATION + ".pdf")
-    PRESENTATION
 
 
 def clean_book_pdf_files():
+    """Remove temporary pdf files in handouts folder (books)"""
     os.remove(BOOK_TITLE + ".pdf")
     os.remove(BOOK_TITLE_NOTES + ".pdf")
     os.remove(BOOK_TITLE_2PP + ".pdf")
@@ -325,23 +330,39 @@ def timing(action):
         return (passedtime.seconds)
 
 
+def calculate_total_tasks(chapters_list):
+    """get correct counter values based on enabled build options"""
+    global TOTAL_TASKS
+
+    chaptercount = count_chapters(chapters_list)
+    if (BUILD_HANDOUTS):
+        TOTAL_TASKS = TOTAL_TASKS + 5 * chaptercount + 2
+    if (BUILD_HANDOUTS_2PP):
+        TOTAL_TASKS = TOTAL_TASKS + 3 * chaptercount + 2
+    if (BUILD_HANDOUTS_NOTES):
+        TOTAL_TASKS = TOTAL_TASKS + 3 * chaptercount + 2
+    if (BUILD_PRESENTATION_SLIDES):
+        TOTAL_TASKS = TOTAL_TASKS + 3 * chaptercount
+
+
 def run():
     """Run the main program"""
     global TOTAL_TASKS
     timing("start")
     chapters_list = read_chapters_file(CONFIG_FILE)
-    TOTAL_TASKS = TASKS_PER_CHAPTER * count_chapters(chapters_list) + 2 + 4
+    calculate_total_tasks(chapters_list)
     print_chapters(chapters_list, BOOK_TITLE)
-    build_chapters(chapters_list,)
-    build_chapters_handouts(chapters_list,)
-    build_chapters_2pp(chapters_list,)
-    build_chapters_presentation(chapters_list,)
     if(BUILD_HANDOUTS):
+        build_chapters(chapters_list,)
         build_book(BOOK_TITLE)
     if(BUILD_HANDOUTS_NOTES):
+        build_chapters_notes(chapters_list,)
         build_book(BOOK_TITLE_NOTES)
     if(BUILD_HANDOUTS_2PP):
+        build_chapters_2pp(chapters_list,)
         build_book(BOOK_TITLE_2PP)
+    if(BUILD_PRESENTATION_SLIDES):
+        build_chapters_presentation(chapters_list,)
     create_archive(chapters_list)
     print_summary(timing("stop"))
     return(0)
