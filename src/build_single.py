@@ -30,6 +30,7 @@ BOOK_TITLE_2PP = "ExampleHandoutsBookTwo"
 ARCHIVE_TITLE = "ExampleHandoutsBook.zip"
 NOTES = "_4pp-Notes"
 TWO_PER_PAGE = "_2pp"
+PRESENTATION = "_pres"
 
 """Global variables
 TODO: make them local, using classes
@@ -56,6 +57,9 @@ BUILD_HANDOUTS_2PP = True
 
 BUILD_HANDOUTS_NOTES = True
 #BUILD_HANDOUTS_NOTES = False
+
+BUILD_PRESENTATION_SLIDES = True
+#BUILD_ORIGINAL_SLIDES = False
 
 CLEANUP = True
 #CLEANUP = False
@@ -201,6 +205,27 @@ def build_chapters_2pp(chapters_list):
         except OSError:
             print("Error: unable to open the script folder")
             print("This should never happen...")
+            
+def build_chapters_presentation(chapters_list):
+    """Build all the chapters and move to handouts folder"""
+    for index, current_chapter in enumerate(chapters_list):
+        try:
+            os.chdir(current_chapter)
+            current_chapter = current_chapter + PRESENTATION
+            timed_cmd(("pdflatex" + " " + current_chapter), 10)
+            timed_cmd(("pdflatex" + " " + current_chapter), 10)
+            timed_cmd(("mv" + " " + current_chapter + ".pdf"
+                       + " " + "../" + HANDOUTSPATH), 10)
+            cleanup()
+        except OSError:
+            print("Error: unable to open test folder")
+            print("Check your config file")
+            FAILED_BUILDS.append(current_chapter)
+        try:
+            os.chdir(SCRIPTPATH)
+        except OSError:
+            print("Error: unable to open the script folder")
+            print("This should never happen...")
 
 
 def build_book(book_title):
@@ -245,6 +270,9 @@ def create_archive(chapters_list):
             for index, current_chapter in enumerate(chapters_list):
                 archive.write(current_chapter + ".pdf",
                               compress_type=compression)
+                if(BUILD_PRESENTATION_SLIDES):
+		    archive.write(current_chapter + PRESENTATION + ".pdf",
+                              compress_type=compression)
                 if(CLEANUP):
                     clean_chapter_pdf_files(current_chapter)
             if(BUILD_HANDOUTS):
@@ -252,7 +280,7 @@ def create_archive(chapters_list):
             if(BUILD_HANDOUTS_NOTES):
                 archive.write(BOOK_TITLE_NOTES + ".pdf", compress_type=compression)
             if(BUILD_HANDOUTS_2PP):
-                archive.write(BOOK_TITLE_2PP + ".pdf", compress_type=compression)
+                archive.write(BOOK_TITLE_2PP + ".pdf", compress_type=compression)            
             if(CLEANUP):
                 clean_book_pdf_files()
         finally:
@@ -267,6 +295,8 @@ def clean_chapter_pdf_files(current_chapter):
     os.remove(current_chapter + NOTES + ".pdf")
     os.remove(current_chapter + "_2pp.pdf")
     os.remove(current_chapter + "-6pp.pdf")
+    os.remove(current_chapter + PRESENTATION + ".pdf")
+    PRESENTATION
 
 
 def clean_book_pdf_files():
@@ -305,6 +335,7 @@ def run():
     build_chapters(chapters_list,)
     build_chapters_handouts(chapters_list,)
     build_chapters_2pp(chapters_list,)
+    build_chapters_presentation(chapters_list,)
     if(BUILD_HANDOUTS):
         build_book(BOOK_TITLE)
     if(BUILD_HANDOUTS_NOTES):
