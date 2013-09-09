@@ -23,6 +23,7 @@ class Settings:
 
     Config = ConfigParser.ConfigParser()
     working_dir = os.getcwd()
+    chapters_list = []
 
     def __init__(self):
         self.readConfigFile("build.conf")
@@ -65,13 +66,16 @@ class Settings:
             self.notes_suffix=self.ConfigSectionMap("InternalFileNames")['notes_suffix']
             self.two_per_page_suffix=self.ConfigSectionMap("InternalFileNames")['two_per_page_suffix']
             self.presentation_suffix=self.ConfigSectionMap("InternalFileNames")['presentation_suffix']
+
+            for number, chapter in enumerate(self.Config.items( "Chapters" )):
+                self.chapters_list.append(chapter[1])
+                print(self.chapters_list)
         except AttributeError:
             #TODO: this does not work!! (AttributeError or KeyError needed? both?)
             print("Error while processing build.conf")
 
 class HandoutsBuilder:
     """ Contains all the tools to build the LaTeX beamer based handouts """
-    chapters_list = ""
     chapter_counter = 0
     failed_builds_counter = 0
     failed_builds_list = []
@@ -81,12 +85,13 @@ class HandoutsBuilder:
     def __init__(self):
         """ Initialisations"""
         self.settings = Settings()
+        self.chapters_list = self.settings.chapters_list
         #self.reporter = Reporter(self.settings)
 
     def run(self):
         """ Run the actual program (call this from main) """
         self.timing("start")
-        self.get_chapters_list(self.settings.config_file)
+        #self.get_chapters_list(self.settings.config_file)
         self.count_total_chapters()
         self.calculate_total_tasks()
         self.print_chapters(self.settings.book_title)
@@ -111,16 +116,6 @@ class HandoutsBuilder:
             self.stop_time = datetime.datetime.now()
             passedtime = self.stop_time - self.start_time
             return (passedtime.seconds)
-
-    def get_chapters_list(self, config_file):
-        """ Read the config file to get the list of chapters """
-        try:
-            with open(config_file, "r") as configfile:
-                self.chapters_list = configfile.read().splitlines()
-        except IOError:
-            print ("Error: 'chapters.conf' not found!")
-            print ("Aborting test session.")
-            sys.exit(1)
 
     def count_total_chapters(self):
         """ Count the number of chapters in the chapters list """
@@ -188,8 +183,8 @@ class HandoutsBuilder:
             except OSError:
                 print("Error: unable to open test folder")
                 print("Check your config file")
-                failed_builds_list.append(current_chapter)
-                failed_builds_counter = failed_builds_counter + 1
+                self.failed_builds_list.append(current_chapter)
+                self.failed_builds_counter = self.failed_builds_counter + 1
             try:
                 os.chdir(self.settings.working_dir)
             except OSError:
@@ -214,7 +209,7 @@ class HandoutsBuilder:
                 print ("Process timeout")
                 os.kill(process.pid, signal.SIGKILL)
                 os.waitpid(-1, os.WNOHANG)
-                self.settings.failed_builds_counter = self.settings.failed_builds_counter + 1
+                self.failed_builds_counter = self.failed_builds_counter + 1
                 return None
             time.sleep(0.01)
         return process.poll()
