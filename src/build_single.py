@@ -15,39 +15,59 @@ import signal
 import glob
 import zipfile
 
+import ConfigParser
+
 
 class Settings:
     """ Contains all the tools to analyse Blackboard assignments """
-    logfile = "blackboard_analysis_tools.log"
-    config_file = "chapters.conf"
-    handouts_path = "Handouts"
-    book_title = "ExampleHandoutsBook"
-    book_title_notes = "ExampleHandoutsBookNotes"
-    book_title_2pp = "ExampleHandoutsBookTwo"
-    archive_title = "ExampleHandoutsBook.zip"
-    notes_suffix = "_4pp-Notes"
-    two_per_page_suffix = "_2pp"
-    presentation_suffix = "_pres"
-    script_path = os.getcwd()
 
-    build_handouts = True
-    #build_handouts = False
-
-    build_handouts_2pp = True
-    #build_handouts_2pp = False
-
-    build_handouts_notes = True
-    #build_handouts_notes = False
-
-    build_presentation_slides = True
-    #build_presentation_slides = False
-
-    cleanup = True
-    #cleanup = False
+    Config = ConfigParser.ConfigParser()
+    working_dir = os.getcwd()
 
     def __init__(self):
-        pass
+        self.readConfigFile("build.conf")
 
+    def ConfigSectionMap(self, section):
+        """ Helper function to read config settings """
+        dict1 = {}
+        options = self.Config.options(section)
+        for option in options:
+            try:
+                dict1[option] = self.Config.get(section, option)
+                if dict1[option] == -1:
+                    DebugPrint("skip: %s" % option)
+            except:
+                print("exception on %s!" % option)
+                dict1[option] = None
+        return dict1
+        
+    def readConfigFile(self, filename):
+        try:
+            self.Config.read(filename)
+            self.logfile=self.ConfigSectionMap("FileNames")['logfile']
+            self.config_file=self.ConfigSectionMap("FileNames")['config_file']
+            self.book_title=self.ConfigSectionMap("FileNames")['book_title']
+            self.book_title_notes=self.ConfigSectionMap("FileNames")['book_title_notes']
+            self.book_title_2pp=self.ConfigSectionMap("FileNames")['book_title_2pp']
+            self.archive_title=self.ConfigSectionMap("FileNames")['archive_title']
+
+            self.archive_title=self.ConfigSectionMap("FileNames")['archive_title']
+
+            self.build_handouts=self.ConfigSectionMap("BuildOptions")['build_handouts']
+            self.build_handouts_2pp=self.ConfigSectionMap("BuildOptions")['build_handouts_2pp']
+            self.build_handouts_notes=self.ConfigSectionMap("BuildOptions")['build_handouts_notes']
+            self.build_presentation_slides=self.ConfigSectionMap("BuildOptions")['build_presentation_slides']
+            self.cleanup=self.ConfigSectionMap("BuildOptions")['cleanup']
+
+            self.handouts_path=self.ConfigSectionMap("Folders")['handouts_path']
+            self.archive_title=self.ConfigSectionMap("FileNames")['archive_title']
+
+            self.notes_suffix=self.ConfigSectionMap("InternalFileNames")['notes_suffix']
+            self.two_per_page_suffix=self.ConfigSectionMap("InternalFileNames")['two_per_page_suffix']
+            self.presentation_suffix=self.ConfigSectionMap("InternalFileNames")['presentation_suffix']
+        except AttributeError:
+            #TODO: this does not work!! (AttributeError or KeyError needed? both?)
+            print("Error while processing build.conf")
 
 class HandoutsBuilder:
     """ Contains all the tools to build the LaTeX beamer based handouts """
@@ -171,7 +191,7 @@ class HandoutsBuilder:
                 failed_builds_list.append(current_chapter)
                 failed_builds_counter = failed_builds_counter + 1
             try:
-                os.chdir(self.settings.script_path)
+                os.chdir(self.settings.working_dir)
             except OSError:
                 print("Error: unable to open the script folder")
                 print("This should never happen...")
@@ -206,7 +226,7 @@ class HandoutsBuilder:
             self.timed_cmd(("pdflatex" + " " + book_title), 10)
             self.timed_cmd(("pdflatex" + " " + book_title), 10)
             self.cleanup()
-            os.chdir(self.settings.script_path)
+            os.chdir(self.settings.working_dir)
         except OSError:
             print("Error: unable build the final book")
             FAILED_BUILDS.append("The book:" + book_title)
@@ -215,7 +235,7 @@ class HandoutsBuilder:
         """Build the archive with all slides and the book"""
         try:
             #TODO: why twice chdir ???
-            os.chdir(self.settings.script_path)
+            os.chdir(self.settings.working_dir)
             os.chdir(self.settings.handouts_path)
             compression = zipfile.ZIP_DEFLATED
             archive = zipfile.ZipFile(self.settings.archive_title, mode='w')
