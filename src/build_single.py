@@ -41,7 +41,7 @@ class Settings:
                 print("exception on %s!" % option)
                 dict1[option] = None
         return dict1
-        
+
     def readConfigFile(self, filename):
         try:
             self.Config.read(filename)
@@ -52,13 +52,12 @@ class Settings:
             self.book_title_2pp=self.ConfigSectionMap("FileNames")['book_title_2pp']
             self.archive_title=self.ConfigSectionMap("FileNames")['archive_title']
 
-            self.archive_title=self.ConfigSectionMap("FileNames")['archive_title']
-
             self.build_handouts=self.ConfigSectionMap("BuildOptions")['build_handouts']
             self.build_handouts_2pp=self.ConfigSectionMap("BuildOptions")['build_handouts_2pp']
             self.build_handouts_notes=self.ConfigSectionMap("BuildOptions")['build_handouts_notes']
             self.build_presentation_slides=self.ConfigSectionMap("BuildOptions")['build_presentation_slides']
             self.cleanup=self.ConfigSectionMap("BuildOptions")['cleanup']
+            self.timeout=self.ConfigSectionMap("BuildOptions")['timeout']
 
             self.handouts_path=self.ConfigSectionMap("Folders")['handouts_path']
             self.archive_title=self.ConfigSectionMap("FileNames")['archive_title']
@@ -69,7 +68,6 @@ class Settings:
 
             for number, chapter in enumerate(self.Config.items( "Chapters" )):
                 self.chapters_list.append(chapter[1])
-                print(self.chapters_list)
         except AttributeError:
             #TODO: this does not work!! (AttributeError or KeyError needed? both?)
             print("Error while processing build.conf")
@@ -141,18 +139,20 @@ class HandoutsBuilder:
 
     def build_handouts(self):
         """ Build the actual handouts """
-        if(self.settings.build_handouts):
+        #TODO: this does not work! (reading string from 'settings' -> not boolean)
+        if(self.settings.build_handouts == 'True'):
             self.build_chapters(self.chapters_list, "default")
             self.build_book(self.settings.book_title)
-        if(self.settings.build_handouts_notes):
+        if(self.settings.build_handouts_notes == 'True'):
             self.build_chapters(self.chapters_list, self.settings.notes_suffix)
             self.build_book(self.settings.book_title_notes)
-        if(self.settings.build_handouts_2pp):
+        if(self.settings.build_handouts_2pp == 'True'):
             self.build_chapters(self.chapters_list,
                 self.settings.two_per_page_suffix)
             self.build_book(self.settings.book_title_2pp)
-        self.build_chapters(self.chapters_list,
-            self.settings.presentation_suffix)
+        if(self.settings.build_presentation_slides == 'True'):
+            self.build_chapters(self.chapters_list,
+                self.settings.presentation_suffix)
 
     def build_chapters(self, chapters_list, chapter_type):
         """ Build all the chapters and move to handouts folder """
@@ -169,33 +169,33 @@ class HandoutsBuilder:
             try:
                 os.chdir(current_chapter)
                 current_chapter = current_chapter + suffix
-                self.timed_cmd(("pdflatex" + " " + current_chapter), 10)
-                self.timed_cmd(("pdflatex" + " " + current_chapter), 10)
+                self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
+                self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
                 if chapter_type == "default":
                     self.timed_cmd(("pdfjam-slides6up"
                             + " " + current_chapter + ".pdf "
-                            + "--nup 2x3 --suffix 6pp -q "), 10)
+                            + "--nup 2x3 --suffix 6pp -q "), self.settings.timeout)
                 self.timed_cmd(("mv" + " " + current_chapter + ".pdf"
-                        + " " + "../" + self.settings.handouts_path), 10)
+                        + " " + "../" + self.settings.handouts_path), self.settings.timeout)
                 self.timed_cmd(("mv" + " " + current_chapter + "-6pp" + ".pdf"
-                        + " " + "../" + self.settings.handouts_path), 10)
+                        + " " + "../" + self.settings.handouts_path), self.settings.timeout)
                 self.cleanup()
             except OSError:
                 print("Error: unable to open test folder")
                 print("Check your config file")
                 self.failed_builds_list.append(current_chapter)
-                self.failed_builds_counter = self.failed_builds_counter + 1
+                self.failed_builds_counter += 1
             try:
                 os.chdir(self.settings.working_dir)
             except OSError:
                 print("Error: unable to open the script folder")
                 print("This should never happen...")
-                FAILED_BUILD_COUNTER = FAILED_BUILD_COUNTER + 1
+                self.failed_builds_counter += 1
+                self.failed_builds_list.append(current_chapter)
 
     def timed_cmd(self, command, timeout):
         """Call a cmd and kill it after 'timeout' seconds"""
         cmd = command.split(" ")
-        #TODO: enable this
         self.print_progress_counter()
         print (command)
         start = datetime.datetime.now()
@@ -210,6 +210,7 @@ class HandoutsBuilder:
                 os.kill(process.pid, signal.SIGKILL)
                 os.waitpid(-1, os.WNOHANG)
                 self.failed_builds_counter = self.failed_builds_counter + 1
+                self.failed_builds_list.append(current_chapter)
                 return None
             time.sleep(0.01)
         return process.poll()
@@ -218,8 +219,8 @@ class HandoutsBuilder:
         """Build the handouts book"""
         try:
             os.chdir(self.settings.handouts_path)
-            self.timed_cmd(("pdflatex" + " " + book_title), 10)
-            self.timed_cmd(("pdflatex" + " " + book_title), 10)
+            self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
+            self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
             self.cleanup()
             os.chdir(self.settings.working_dir)
         except OSError:
@@ -238,29 +239,29 @@ class HandoutsBuilder:
                 for current_chapter in self.chapters_list:
                     archive.write(current_chapter + ".pdf",
                         compress_type=compression)
-                    if(self.settings.build_presentation_slides):
+                    if(self.settings.build_presentation_slides == 'True'):
                         archive.write(current_chapter
                             + self.settings.presentation_suffix + ".pdf",
                             compress_type=compression)
-                    if(self.settings.cleanup):
+                    if(self.settings.cleanup == 'True'):
                         self.clean_chapter_pdf_files(current_chapter)
-                if(self.settings.build_handouts):
+                if(self.settings.build_handouts == 'True'):
                     archive.write(self.settings.book_title + ".pdf",
                         compress_type=compression)
-                if(self.settings.build_handouts_notes):
+                if(self.settings.build_handouts_notes == 'True'):
                     archive.write(self.settings.book_title_notes + ".pdf",
                         compress_type=compression)
-                if(self.settings.build_handouts_2pp):
+                if(self.settings.build_handouts_2pp == 'True'):
                     archive.write(self.settings.book_title_2pp + ".pdf",
                         compress_type=compression)
-                if(self.settings.cleanup):
+                if(self.settings.cleanup == 'True'):
                     self.clean_book_pdf_files()
             finally:
                 archive.close()
         except OSError:
             print("Error: unable build the archive: "
                 + self.settings.archive_title)
-            FAILED_BUILDS.append("Failed to build archive:"
+            self.failed_builds_list.append("Failed to build archive:"
                 + self.settings.archive_title)
 
     def clean_chapter_pdf_files(self, chapter):
@@ -302,19 +303,27 @@ class HandoutsBuilder:
 
     def calculate_total_tasks(self):
         """ Calculate correct counter values based on enabled build options """
-        if (self.settings.build_handouts):
+        if (self.settings.build_handouts == 'True'):
             self.total_tasks_counter = self.total_tasks_counter + 5 * self.chapter_counter + 2
-        if (self.settings.build_handouts_2pp):
+        if (self.settings.build_handouts_2pp == 'True'):
             self.total_tasks_counter = self.total_tasks_counter + 4 * self.chapter_counter + 2
-        if (self.settings.build_handouts_notes):
+        if (self.settings.build_handouts_notes == 'True'):
             self.total_tasks_counter = self.total_tasks_counter + 4 * self.chapter_counter + 2
-        if (self.settings.build_presentation_slides):
+        if (self.settings.build_presentation_slides == 'True'):
             self.total_tasks_counter = self.total_tasks_counter + 4 * self.chapter_counter
+
+    def summary(self):
+        """ Print a summary of the build process """
+        if(self.failed_builds_counter > 0):
+            print("Failed builds: ")
+            print(self.failed_builds_list)
+            print(", ".join(self.failed_builds_list ))
 
 def run():
     """ Run the main program """
     handouts_builder = HandoutsBuilder()
     handouts_builder.run()
+    handouts_builder.summary()
     return(handouts_builder.exit_value())
 
 if __name__ == "__main__":
