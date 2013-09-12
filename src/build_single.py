@@ -14,21 +14,28 @@ import time
 import signal
 import glob
 import zipfile
+import hashlib
 
 import ConfigParser
+
+from os.path import normpath, walk, isdir, isfile, dirname, basename, \
+    exists as path_exists, join as path_join
 
 
 class Settings:
     """ Contains all the tools to analyse Blackboard assignments """
 
     Config = ConfigParser.ConfigParser()
+    Log = ConfigParser.ConfigParser()
     working_dir = os.getcwd()
     chapters_list = []
+    chapters_checksum_list = []
 
     def __init__(self):
-        self.readConfigFile("build.conf")
+        self.read_config_file("build.conf")
+        self.readLogFile(self.logfile)
 
-    def ConfigSectionMap(self, section):
+    def config_section_map(self, section):
         """ Helper function to read config settings """
         dict1 = {}
         options = self.Config.options(section)
@@ -42,35 +49,51 @@ class Settings:
                 dict1[option] = None
         return dict1
 
-    def readConfigFile(self, filename):
+    def read_config_file(self, filename):
+        """ Read the config  """
         try:
             self.Config.read(filename)
-            self.logfile=self.ConfigSectionMap("FileNames")['logfile']
-            self.config_file=self.ConfigSectionMap("FileNames")['config_file']
-            self.book_title=self.ConfigSectionMap("FileNames")['book_title']
-            self.book_title_notes=self.ConfigSectionMap("FileNames")['book_title_notes']
-            self.book_title_2pp=self.ConfigSectionMap("FileNames")['book_title_2pp']
-            self.archive_title=self.ConfigSectionMap("FileNames")['archive_title']
+            self.logfile = self.config_section_map("FileNames")['logfile']
+            self.config_file = self.config_section_map("FileNames")['config_file']
+            self.book_title = self.config_section_map("FileNames")['book_title']
+            self.book_title_notes = self.config_section_map("FileNames")['book_title_notes']
+            self.book_title_2pp = self.config_section_map("FileNames")['book_title_2pp']
+            self.archive_title = self.config_section_map("FileNames")['archive_title']
 
-            self.build_handouts=self.ConfigSectionMap("BuildOptions")['build_handouts']
-            self.build_handouts_2pp=self.ConfigSectionMap("BuildOptions")['build_handouts_2pp']
-            self.build_handouts_notes=self.ConfigSectionMap("BuildOptions")['build_handouts_notes']
-            self.build_presentation_slides=self.ConfigSectionMap("BuildOptions")['build_presentation_slides']
-            self.cleanup=self.ConfigSectionMap("BuildOptions")['cleanup']
-            self.timeout=self.ConfigSectionMap("BuildOptions")['timeout']
+            self.build_handouts = self.config_section_map("BuildOptions")['build_handouts']
+            self.build_handouts_2pp = self.config_section_map("BuildOptions")['build_handouts_2pp']
+            self.build_handouts_notes = self.config_section_map("BuildOptions")['build_handouts_notes']
+            self.build_presentation_slides = self.config_section_map("BuildOptions")['build_presentation_slides']
+            self.cleanup = self.config_section_map("BuildOptions")['cleanup']
+            self.timeout = self.config_section_map("BuildOptions")['timeout']
+            self.build_all = self.config_section_map("BuildOptions")['build_all']
 
-            self.handouts_path=self.ConfigSectionMap("Folders")['handouts_path']
-            self.archive_title=self.ConfigSectionMap("FileNames")['archive_title']
+            self.handouts_path = self.config_section_map("Folders")['handouts_path']
+            self.archive_title = self.config_section_map("FileNames")['archive_title']
 
-            self.notes_suffix=self.ConfigSectionMap("InternalFileNames")['notes_suffix']
-            self.two_per_page_suffix=self.ConfigSectionMap("InternalFileNames")['two_per_page_suffix']
-            self.presentation_suffix=self.ConfigSectionMap("InternalFileNames")['presentation_suffix']
+            self.notes_suffix = self.config_section_map("InternalFileNames")['notes_suffix']
+            self.two_per_page_suffix = self.config_section_map("InternalFileNames")['two_per_page_suffix']
+            self.presentation_suffix = self.config_section_map("InternalFileNames")['presentation_suffix']
 
             for number, chapter in enumerate(self.Config.items( "Chapters" )):
                 self.chapters_list.append(chapter[1])
         except AttributeError:
             #TODO: this does not work!! (AttributeError or KeyError needed? both?)
             print("Error while processing build.conf")
+
+    def readLogFile(self, filename):
+        """ Read the logfile to get the previous checksum values for all chapters """
+        try:
+            self.Log.read(filename)
+
+            for number, chapter in enumerate(self.Log.items("Chapters")):
+                #print(chapter[1])
+                self.chapters_checksum_list.append(chapter[1])
+
+        except AttributeError:
+            #TODO: this does not work!! (AttributeError or KeyError needed? both?)
+            print("Error while processing build.conf")
+
 
 class HandoutsBuilder:
     """ Contains all the tools to build the LaTeX beamer based handouts """
@@ -79,6 +102,7 @@ class HandoutsBuilder:
     failed_builds_list = []
     total_tasks_counter = 0
     current_task_counter = 0
+    changed_chapters_list = []
 
     def __init__(self):
         """ Initialisations"""
@@ -91,9 +115,16 @@ class HandoutsBuilder:
         self.timing("start")
         #self.get_chapters_list(self.settings.config_file)
         self.count_total_chapters()
-        self.calculate_total_tasks()
         self.print_chapters(self.settings.book_title)
-        self.build_handouts()
+        self.calculate_total_tasks()
+        if(self.settings.build_all == 'True'):
+            print("Building all chapters")
+            self.detect_changed_chapters()
+            self.build_handouts(self.chapters_list)
+        else:
+            print("Skipping chapters without changes")
+            self.detect_changed_chapters()
+            self.build_handouts(self.changed_chapters_list)
         self.create_archive()
         #self.print_summary(timing("stop"))
         return(0)
@@ -105,6 +136,33 @@ class HandoutsBuilder:
             return 0
         else:
             return 42
+
+    def detect_changed_chapters(self):
+        f = open(self.settings.logfile, "w")
+        f.write("[Chapters]" + "\n")
+        previous_checksum_counter = 0
+        for counter, checksum in enumerate(self.settings.chapters_checksum_list):
+             previous_checksum_counter = counter
+        for number, chapter in enumerate(self.chapters_list):
+            current_checksum = path_checksum(['./' + chapter])
+            if (number <= previous_checksum_counter):
+                previous_checksum = 0   
+                if (previous_checksum_counter != 0):
+                    previous_checksum = self.settings.chapters_checksum_list[number]
+            else:
+                previous_checksum = 0
+            if (current_checksum == previous_checksum):
+                if(self.settings.build_all == 'True'):
+                    print(chapter + ": No changes, chapter could have been skipped by disabling 'build_all'")
+                else:
+                    print(chapter + ": No changes, skipping chapter")
+                    #TODO: check if all pdf files exists (build will fail if they have been manually deleted from the handouts folder)
+            else:
+                self.changed_chapters_list.append(chapter)
+                #print(self.changed_chapters_list)
+            f.write(chapter + ": " + str(current_checksum) + "\n")
+        print("")
+        f.close()
 
     def timing(self, action):
         """Calculate the runtime of the program in seconds """
@@ -137,21 +195,21 @@ class HandoutsBuilder:
         print ("")
         print ("")
 
-    def build_handouts(self):
+    def build_handouts(self, chapters_list):
         """ Build the actual handouts """
         #TODO: this does not work! (reading string from 'settings' -> not boolean)
         if(self.settings.build_handouts == 'True'):
-            self.build_chapters(self.chapters_list, "default")
+            self.build_chapters(chapters_list, "default")
             self.build_book(self.settings.book_title)
         if(self.settings.build_handouts_notes == 'True'):
-            self.build_chapters(self.chapters_list, self.settings.notes_suffix)
+            self.build_chapters(chapters_list, self.settings.notes_suffix)
             self.build_book(self.settings.book_title_notes)
         if(self.settings.build_handouts_2pp == 'True'):
-            self.build_chapters(self.chapters_list,
+            self.build_chapters(chapters_list,
                 self.settings.two_per_page_suffix)
             self.build_book(self.settings.book_title_2pp)
         if(self.settings.build_presentation_slides == 'True'):
-            self.build_chapters(self.chapters_list,
+            self.build_chapters(chapters_list,
                 self.settings.presentation_suffix)
 
     def build_chapters(self, chapters_list, chapter_type):
@@ -317,7 +375,8 @@ class HandoutsBuilder:
         if(self.failed_builds_counter > 0):
             print("Failed builds: ")
             print(self.failed_builds_list)
-            print(", ".join(self.failed_builds_list ))
+            print(", ".join(self.failed_builds_list))
+
 
 def run():
     """ Run the main program """
@@ -326,5 +385,39 @@ def run():
     handouts_builder.summary()
     return(handouts_builder.exit_value())
 
+
+def path_checksum(paths):
+    """
+        Recursively calculates a checksum representing the contents of all files
+        found with a sequence of file and/or directory paths.
+        From: http://code.activestate.com/recipes/576973-getting-the-sha-1-or-md5-hash-of-a-directory/
+    """
+    if not hasattr(paths, '__iter__'):
+        raise TypeError('sequence or iterable expected not %r!' % type(paths))
+
+    def _update_checksum(checksum, dirname, filenames):
+        for filename in sorted(filenames):
+            path = path_join(dirname, filename)
+            if isfile(path):
+                #print path
+                fh = open(path, 'rb')
+                while 1:
+                    buf = fh.read(4096)
+                    if not buf : break
+                    checksum.update(buf)
+                fh.close()
+
+    chksum = hashlib.sha1()
+
+    for path in sorted([normpath(f) for f in paths]):
+        if path_exists(path):
+            if isdir(path):
+                walk(path, _update_checksum, chksum)
+            elif isfile(path):
+                _update_checksum(chksum, dirname(path), basename(path))
+
+    return chksum.hexdigest()
+
 if __name__ == "__main__":
+    #print (path_checksum(['./chap2']))
     sys.exit(run())
