@@ -283,7 +283,7 @@ class HandoutsBuilder:
             os.chdir(self.settings.working_dir)
         except OSError:
             print("Error: unable build the final book")
-            FAILED_BUILDS.append("The book:" + book_title)
+            self.failed_builds_list.append("The book:" + book_title)
 
     def create_archive(self):
         """Build the archive with all slides and the book"""
