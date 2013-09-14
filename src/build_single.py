@@ -64,7 +64,8 @@ class Settings:
             self.build_handouts_2pp = self.config_section_map("BuildOptions")['build_handouts_2pp']
             self.build_handouts_notes = self.config_section_map("BuildOptions")['build_handouts_notes']
             self.build_presentation_slides = self.config_section_map("BuildOptions")['build_presentation_slides']
-            self.cleanup = self.config_section_map("BuildOptions")['cleanup']
+            self.cleanup_pdf_book = self.config_section_map("BuildOptions")['cleanup_pdf_book']
+            self.cleanup_pdf_chapters = self.config_section_map("BuildOptions")['cleanup_pdf_chapters']
             self.timeout = self.config_section_map("BuildOptions")['timeout']
             self.build_all = self.config_section_map("BuildOptions")['build_all']
 
@@ -301,7 +302,7 @@ class HandoutsBuilder:
                         archive.write(current_chapter
                             + self.settings.presentation_suffix + ".pdf",
                             compress_type=compression)
-                    if(self.settings.cleanup == 'True'):
+                    if(self.settings.cleanup_pdf_chapters == 'True'):
                         self.clean_chapter_pdf_files(current_chapter)
                 if(self.settings.build_handouts == 'True'):
                     archive.write(self.settings.book_title + ".pdf",
@@ -312,7 +313,7 @@ class HandoutsBuilder:
                 if(self.settings.build_handouts_2pp == 'True'):
                     archive.write(self.settings.book_title_2pp + ".pdf",
                         compress_type=compression)
-                if(self.settings.cleanup == 'True'):
+                if(self.settings.cleanup_pdf_book == 'True'):
                     self.clean_book_pdf_files()
             finally:
                 archive.close()
