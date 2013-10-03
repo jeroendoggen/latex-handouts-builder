@@ -231,7 +231,7 @@ class HandoutsBuilder:
             try:
                 os.chdir(current_chapter)
                 current_chapter = current_chapter + suffix
-                self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
+                self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
                 self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
                 if chapter_type == "default":
                     self.pdflatex_warnings += self.timed_cmd(("pdfjam-slides6up"
@@ -289,7 +289,7 @@ class HandoutsBuilder:
         """Build the handouts book"""
         try:
             os.chdir(self.settings.handouts_path)
-            self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
+            self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
             self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
             self.cleanup()
             os.chdir(self.settings.working_dir)
