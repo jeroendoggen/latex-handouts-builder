@@ -232,14 +232,16 @@ class HandoutsBuilder:
                 os.chdir(current_chapter)
                 current_chapter = current_chapter + suffix
                 self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
-                self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
+                warnings_counter = self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
+                self.print_warning_message(current_chapter, warnings_counter)
                 if chapter_type == "default":
-                    self.pdflatex_warnings += self.timed_cmd(("pdfjam-slides6up"
+                    warnings_counter = self.timed_cmd(("pdfjam-slides6up"
                             + " " + current_chapter + ".pdf "
                             + "--nup 2x3 --suffix 6pp -q "), self.settings.timeout)
-                self.pdflatex_warnings += self.timed_cmd(("mv" + " " + current_chapter + ".pdf"
+                    self.print_warning_message(current_chapter, warnings_counter)
+                self.timed_cmd(("mv" + " " + current_chapter + ".pdf"
                         + " " + "../" + self.settings.handouts_path), self.settings.timeout)
-                self.pdflatex_warnings += self.timed_cmd(("mv" + " " + current_chapter + "-6pp" + ".pdf"
+                self.timed_cmd(("mv" + " " + current_chapter + "-6pp" + ".pdf"
                         + " " + "../" + self.settings.handouts_path), self.settings.timeout)
                 self.cleanup()
             except OSError:
@@ -257,6 +259,12 @@ class HandoutsBuilder:
                 self.failed_builds_list.append(current_chapter)
                 sys.exit(self.failed_builds_counter)
 
+    def print_warning_message(self, command, counter):
+        temp = counter + 1
+        while counter > 0:
+            print ("info.c:1:" + str(temp - counter) + ": warning: in command " + command)
+            counter -= 1
+
     def timed_cmd(self, command, timeout):
         """Call a cmd and kill it after 'timeout' seconds"""
         cmd = command.split(" ")
@@ -268,10 +276,7 @@ class HandoutsBuilder:
                                 stderr=subprocess.PIPE)
         out, err = process.communicate()
         warnings = out.count('Warning:')
-        temp = warnings + 1
-        while warnings > 0:
-            print ("info.c:1:" + str(temp - warnings) + ": warning: in command " + command)
-            warnings -= 1
+
 
         while process.poll() is None:
             now = datetime.datetime.now()
@@ -290,7 +295,8 @@ class HandoutsBuilder:
         try:
             os.chdir(self.settings.handouts_path)
             self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
-            self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
+            warnings_counter = self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
+            self.print_warning_message(book_title, warnings_counter)
             self.cleanup()
             os.chdir(self.settings.working_dir)
         except OSError:
@@ -388,11 +394,6 @@ class HandoutsBuilder:
 
     def summary(self):
         """ Print a summary of the build process """
-        print(self.pdflatex_warnings)
-        while self.pdflatex_warnings > 0:
-            print("fake.c:1:1: warning: pdflatex warning detected")
-            self.pdflatex_warnings -= 1
-
         if(self.failed_builds_counter > 0):
             print("Failed builds: ")
             print(self.failed_builds_list)
