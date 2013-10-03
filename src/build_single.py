@@ -270,7 +270,7 @@ class HandoutsBuilder:
         warnings = out.count('Warning:')
         temp = warnings + 1
         while warnings > 0:
-            print ("info.c:1:" + str(temp - warnings) + ": warning detected in: " + command)
+            print ("info.c:1:" + str(temp - warnings) + ": warning: in command " + command)
             warnings -= 1
 
         while process.poll() is None:
