@@ -47,6 +47,7 @@ class Settings:
             except:
                 print("exception on %s!" % option)
                 dict1[option] = None
+                sys.exit(self.failed_builds_counter)
         return dict1
 
     def read_config_file(self, filename):
@@ -81,6 +82,8 @@ class Settings:
         except AttributeError:
             #TODO: this does not work!! (AttributeError or KeyError needed? both?)
             print("Error while processing build.conf")
+            self.failed_builds_counter += 1
+            sys.exit(self.failed_builds_counter)
 
     def readLogFile(self, filename):
         """ Read the logfile to get the previous checksum values for all chapters """
@@ -94,6 +97,8 @@ class Settings:
         except AttributeError:
             #TODO: this does not work!! (AttributeError or KeyError needed? both?)
             print("Error while processing build.conf")
+            self.failed_builds_counter += 1
+            sys.exit(self.failed_builds_counter)
 
 
 class HandoutsBuilder:
@@ -131,12 +136,9 @@ class HandoutsBuilder:
         return(0)
 
     def exit_value(self):
-        #"""TODO: Generate the exit value for the application."""
-        #if (self.errors == 0):
-        if (True):
-            return 0
-        else:
-            return 42
+        #""" Should return zero when no error are encountered """
+        return self.failed_builds_counter
+
 
     def detect_changed_chapters(self):
         f = open(self.settings.logfile, "w")
@@ -244,6 +246,7 @@ class HandoutsBuilder:
                 print("Check your config file")
                 self.failed_builds_list.append(current_chapter)
                 self.failed_builds_counter += 1
+                sys.exit(self.failed_builds_counter)
             try:
                 os.chdir(self.settings.working_dir)
             except OSError:
@@ -251,6 +254,7 @@ class HandoutsBuilder:
                 print("This should never happen...")
                 self.failed_builds_counter += 1
                 self.failed_builds_list.append(current_chapter)
+                sys.exit(self.failed_builds_counter)
 
     def timed_cmd(self, command, timeout):
         """Call a cmd and kill it after 'timeout' seconds"""
@@ -268,7 +272,7 @@ class HandoutsBuilder:
                 print ("Process timeout")
                 os.kill(process.pid, signal.SIGKILL)
                 os.waitpid(-1, os.WNOHANG)
-                self.failed_builds_counter = self.failed_builds_counter + 1
+                self.failed_builds_counter += 1
                 self.failed_builds_list.append(current_chapter)
                 return None
             time.sleep(0.01)
@@ -285,6 +289,8 @@ class HandoutsBuilder:
         except OSError:
             print("Error: unable build the final book")
             self.failed_builds_list.append("The book:" + book_title)
+            self.failed_builds_counter += 1
+            sys.exit(self.failed_builds_counter)
 
     def create_archive(self):
         """Build the archive with all slides and the book"""
@@ -322,6 +328,8 @@ class HandoutsBuilder:
                 + self.settings.archive_title)
             self.failed_builds_list.append("Failed to build archive:"
                 + self.settings.archive_title)
+            self.failed_builds_counter += 1
+            sys.exit(self.failed_builds_counter)
 
     def clean_chapter_pdf_files(self, chapter):
         """ Remove temporary pdf files in handouts folder (chapter slides) """
@@ -395,6 +403,7 @@ def path_checksum(paths):
     """
     if not hasattr(paths, '__iter__'):
         raise TypeError('sequence or iterable expected not %r!' % type(paths))
+        self.failed_builds_counter += 1
 
     def _update_checksum(checksum, dirname, filenames):
         for filename in sorted(filenames):
