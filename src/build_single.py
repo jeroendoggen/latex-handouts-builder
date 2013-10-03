@@ -386,7 +386,7 @@ class HandoutsBuilder:
         """ Print a summary of the build process """
         print(self.pdflatex_warnings)
         while self.pdflatex_warnings > 0:
-            print("fake.c:1:1: Warning: pdflatex warning detected")
+            print("fake.c:1:1: warning: pdflatex warning detected")
             self.pdflatex_warnings -= 1
 
         if(self.failed_builds_counter > 0):
