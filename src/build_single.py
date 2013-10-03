@@ -262,7 +262,7 @@ class HandoutsBuilder:
     def print_warning_message(self, command, counter):
         temp = counter + 1
         while counter > 0:
-            print ("info.c:1:" + str(temp - counter) + ": warning: in command " + command)
+            print (command + ".tex:" + str(temp - counter) + ": warning: pdflatex problem ")
             counter -= 1
 
     def timed_cmd(self, command, timeout):
