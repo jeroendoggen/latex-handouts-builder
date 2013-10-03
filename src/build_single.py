@@ -109,6 +109,7 @@ class HandoutsBuilder:
     total_tasks_counter = 0
     current_task_counter = 0
     changed_chapters_list = []
+    pdflatex_warnings = 0
 
     def __init__(self):
         """ Initialisations"""
@@ -230,15 +231,15 @@ class HandoutsBuilder:
             try:
                 os.chdir(current_chapter)
                 current_chapter = current_chapter + suffix
-                self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
-                self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
+                self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
+                self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + current_chapter), self.settings.timeout)
                 if chapter_type == "default":
-                    self.timed_cmd(("pdfjam-slides6up"
+                    self.pdflatex_warnings += self.timed_cmd(("pdfjam-slides6up"
                             + " " + current_chapter + ".pdf "
                             + "--nup 2x3 --suffix 6pp -q "), self.settings.timeout)
-                self.timed_cmd(("mv" + " " + current_chapter + ".pdf"
+                self.pdflatex_warnings += self.timed_cmd(("mv" + " " + current_chapter + ".pdf"
                         + " " + "../" + self.settings.handouts_path), self.settings.timeout)
-                self.timed_cmd(("mv" + " " + current_chapter + "-6pp" + ".pdf"
+                self.pdflatex_warnings += self.timed_cmd(("mv" + " " + current_chapter + "-6pp" + ".pdf"
                         + " " + "../" + self.settings.handouts_path), self.settings.timeout)
                 self.cleanup()
             except OSError:
@@ -265,6 +266,8 @@ class HandoutsBuilder:
         process = subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        warnings = out.count('Warning:')
 
         while process.poll() is None:
             now = datetime.datetime.now()
@@ -276,14 +279,14 @@ class HandoutsBuilder:
                 self.failed_builds_list.append(current_chapter)
                 return None
             time.sleep(0.01)
-        return process.poll()
+        return warnings
 
     def build_book(self, book_title):
         """Build the handouts book"""
         try:
             os.chdir(self.settings.handouts_path)
-            self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
-            self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
+            self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
+            self.pdflatex_warnings += self.timed_cmd(("pdflatex" + " " + book_title), self.settings.timeout)
             self.cleanup()
             os.chdir(self.settings.working_dir)
         except OSError:
@@ -381,6 +384,11 @@ class HandoutsBuilder:
 
     def summary(self):
         """ Print a summary of the build process """
+        print(self.pdflatex_warnings)
+        while self.pdflatex_warnings > 0:
+            print("Warning: pdflatex warning detected")
+            self.pdflatex_warnings -= 1
+
         if(self.failed_builds_counter > 0):
             print("Failed builds: ")
             print(self.failed_builds_list)
