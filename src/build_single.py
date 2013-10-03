@@ -268,8 +268,9 @@ class HandoutsBuilder:
                                 stderr=subprocess.PIPE)
         out, err = process.communicate()
         warnings = out.count('Warning:')
+        temp = warnings + 1
         while warnings > 0:
-            print ("info:1:" + str(warnings) + ": warning detected in: " + command)
+            print ("info.c:1:" + str(temp - warnings) + ": warning detected in: " + command)
             warnings -= 1
 
         while process.poll() is None:
