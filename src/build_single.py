@@ -245,7 +245,7 @@ class HandoutsBuilder:
                         + " " + "../" + self.settings.handouts_path), self.settings.timeout)
                 self.cleanup()
             except OSError:
-                print("Error: unable to open test folder")
+                print("Error: unable to open folder: " + current_chapter)
                 print("Check your config file")
                 self.failed_builds_list.append(current_chapter)
                 self.failed_builds_counter += 1
@@ -253,7 +253,7 @@ class HandoutsBuilder:
             try:
                 os.chdir(self.settings.working_dir)
             except OSError:
-                print("Error: unable to open the script folder")
+                print("Error: unable to open the script folder: " + self.settings.working_dir)
                 print("This should never happen...")
                 self.failed_builds_counter += 1
                 self.failed_builds_list.append(current_chapter)
