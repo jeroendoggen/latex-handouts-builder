@@ -315,8 +315,9 @@ class HandoutsBuilder:
             archive = zipfile.ZipFile(self.settings.archive_title, mode='w')
             try:
                 for current_chapter in self.chapters_list:
-                    archive.write(current_chapter + ".pdf",
-                        compress_type=compression)
+                    if(self.settings.build_handouts == 'True'):
+                        archive.write(current_chapter + ".pdf",
+                            compress_type=compression)
                     if(self.settings.build_presentation_slides == 'True'):
                         archive.write(current_chapter
                             + self.settings.presentation_suffix + ".pdf",
