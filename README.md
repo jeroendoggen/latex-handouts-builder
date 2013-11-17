@@ -1,8 +1,8 @@
-LaTeX Handouts Builder
-======================
-Build Script for Latex-beamer based course handouts
+# LaTeX Handouts Builder
+Build Script for Latex-beamer based course handouts.
+This tool can be used to build "course handout books" using multiple LaTeX beamer slides sets.
 
-What is it does:
+### What is it does:
  * Build multiple LaTeX beamer slide sets with one command: ``python build.py``
  * Convert the slides to a printer-friendly format (no slide transitions, 6 slides per page, less colors)
  * Build a main "course handouts book" with all the slides (one chapter per beamer slide set, title page, introduction, table of contents,...)
@@ -10,13 +10,26 @@ What is it does:
  
 The scripts starts multiple processes in parallel to build all slide sets at the same time. This results in a big speedup on multi-core systems.
 
-Dependencies:
--------------
+### Book structure:
+Title page, introduction, table of contents
+
+One chapter per slide set (three printer-friendly versions: no slides transitions &  less colors)
+ * three slides per page with room for notes (example)
+ * six slides per page (example)
+ * two slides per page (example)
+
+## Usage:
+ * Just run one program: "python build.py"
+ * The program starts building all the LaTeX beamer slides.
+ * The output is converted to the printer-friendly formats.
+ * All documents are merged in the master handouts book.
+ * A .zip archive with all the documents is created
+
+### Dependencies:
  * pdflatex - PDF output from TeX
  * pdfjam - A shell script for manipulating PDF files
 
-Typical output:
----------------
+### Typical output:
 #### Parallel build: (using multiple processes, fastests)
 
     user@computer~/latex-handouts-builder$ python build.py 
@@ -52,7 +65,7 @@ Typical output:
     Building the final book: ExampleHandoutsBook
     Output written to: ExampleHandoutsBook.zip
     Build took 17 seconds
-    
+
 #### Sequential build: (easier for debugging LaTeX errors, but slower)
 
     The following files will be processed:
@@ -86,4 +99,3 @@ Typical output:
     42/43 pdflatex ExampleHandoutsBook
     Output written to: ExampleHandoutsBook.zip
     Build took 42 seconds
-
