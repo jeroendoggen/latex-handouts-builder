@@ -76,7 +76,7 @@ class Settings:
             self.two_per_page_suffix = self.config_section_map("InternalFileNames")['two_per_page_suffix']
             self.presentation_suffix = self.config_section_map("InternalFileNames")['presentation_suffix']
 
-            for number, chapter in enumerate(self.Config.items( "Chapters" )):
+            for number, chapter in enumerate(self.Config.items("Chapters")):
                 self.chapters_list.append(chapter[1])
         except AttributeError:
             #TODO: this does not work!! (AttributeError or KeyError needed? both?)
@@ -143,11 +143,11 @@ class HandoutsBuilder:
         f.write("[Chapters]" + "\n")
         previous_checksum_counter = 0
         for counter, checksum in enumerate(self.settings.chapters_checksum_list):
-             previous_checksum_counter = counter
+            previous_checksum_counter = counter
         for number, chapter in enumerate(self.chapters_list):
             current_checksum = path_checksum(['./' + chapter])
             if (number <= previous_checksum_counter):
-                previous_checksum = 0   
+                previous_checksum = 0
                 if (previous_checksum_counter != 0):
                     previous_checksum = self.settings.chapters_checksum_list[number]
             else:
@@ -405,7 +405,8 @@ def path_checksum(paths):
                 fh = open(path, 'rb')
                 while 1:
                     buf = fh.read(4096)
-                    if not buf : break
+                    if not buf:
+                        break
                     checksum.update(buf)
                 fh.close()
 

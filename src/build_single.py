@@ -77,7 +77,7 @@ class Settings:
             self.two_per_page_suffix = self.config_section_map("InternalFileNames")['two_per_page_suffix']
             self.presentation_suffix = self.config_section_map("InternalFileNames")['presentation_suffix']
 
-            for number, chapter in enumerate(self.Config.items( "Chapters" )):
+            for number, chapter in enumerate(self.Config.items("Chapters")):
                 self.chapters_list.append(chapter[1])
         except AttributeError:
             #TODO: this does not work!! (AttributeError or KeyError needed? both?)
@@ -140,17 +140,16 @@ class HandoutsBuilder:
         #""" Should return zero when no error are encountered """
         return self.failed_builds_counter
 
-
     def detect_changed_chapters(self):
         f = open(self.settings.logfile, "w")
         f.write("[Chapters]" + "\n")
         previous_checksum_counter = 0
         for counter, checksum in enumerate(self.settings.chapters_checksum_list):
-             previous_checksum_counter = counter
+            previous_checksum_counter = counter
         for number, chapter in enumerate(self.chapters_list):
             current_checksum = path_checksum(['./' + chapter])
             if (number <= previous_checksum_counter):
-                previous_checksum = 0   
+                previous_checksum = 0
                 if (previous_checksum_counter != 0):
                     previous_checksum = self.settings.chapters_checksum_list[number]
             else:
@@ -276,7 +275,6 @@ class HandoutsBuilder:
                                 stderr=subprocess.PIPE)
         out, err = process.communicate()
         warnings = out.count('Warning:')
-
 
         while process.poll() is None:
             now = datetime.datetime.now()
@@ -411,9 +409,9 @@ def run():
 
 def path_checksum(paths):
     """
-        Recursively calculates a checksum representing the contents of all files
-        found with a sequence of file and/or directory paths.
-        From: http://code.activestate.com/recipes/576973-getting-the-sha-1-or-md5-hash-of-a-directory/
+        Recursively calculates a checksum representing the contents of all
+        files found with a sequence of file and/or directory paths.
+        http://code.activestate.com/recipes/576973-getting-the-sha-1-or-md5-hash-of-a-directory/
     """
     if not hasattr(paths, '__iter__'):
         raise TypeError('sequence or iterable expected not %r!' % type(paths))
@@ -427,7 +425,8 @@ def path_checksum(paths):
                 fh = open(path, 'rb')
                 while 1:
                     buf = fh.read(4096)
-                    if not buf : break
+                    if not buf:
+                        break
                     checksum.update(buf)
                 fh.close()
 
