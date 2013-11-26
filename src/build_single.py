@@ -30,10 +30,11 @@ class Settings:
     working_dir = os.getcwd()
     chapters_list = []
     chapters_checksum_list = []
+    failed_builds_counter = 0
 
     def __init__(self):
         self.read_config_file("build.conf")
-        self.readLogFile(self.logfile)
+        self.read_logfile(self.logfile)
 
     def config_section_map(self, section):
         """ Helper function to read config settings """
@@ -43,8 +44,8 @@ class Settings:
             try:
                 dict1[option] = self.Config.get(section, option)
                 if dict1[option] == -1:
-                    DebugPrint("skip: %s" % option)
-            except:
+                    print("skip: %s" % option)
+            except AttributeError:
                 print("exception on %s!" % option)
                 dict1[option] = None
                 sys.exit(self.failed_builds_counter)
@@ -85,12 +86,11 @@ class Settings:
             self.failed_builds_counter += 1
             sys.exit(self.failed_builds_counter)
 
-    def readLogFile(self, filename):
+    def read_logfile(self, filename):
         """ Read the logfile to get the previous checksum values for all chapters """
         try:
             self.Log.read(filename)
-
-            for number, chapter in enumerate(self.Log.items("Chapters")):
+            for chapter in enumerate(self.Log.items("Chapters")):
                 #print(chapter[1])
                 self.chapters_checksum_list.append(chapter[1])
 
@@ -110,6 +110,8 @@ class HandoutsBuilder:
     current_task_counter = 0
     changed_chapters_list = []
     pdflatex_warnings = 0
+    stop_time = 0
+    start_time = 0
 
     def __init__(self):
         """ Initialisations"""
@@ -137,14 +139,15 @@ class HandoutsBuilder:
         return(0)
 
     def exit_value(self):
-        #""" Should return zero when no error are encountered """
+        """ Should return zero when no error are encountered """
         return self.failed_builds_counter
 
     def detect_changed_chapters(self):
-        f = open(self.settings.logfile, "w")
-        f.write("[Chapters]" + "\n")
+        """ Detect chapters without file changes to speed up build time """
+        logfile = open(self.settings.logfile, "w")
+        logfile.write("[Chapters]" + "\n")
         previous_checksum_counter = 0
-        for counter, checksum in enumerate(self.settings.chapters_checksum_list):
+        for counter in enumerate(self.settings.chapters_checksum_list):
             previous_checksum_counter = counter
         for number, chapter in enumerate(self.chapters_list):
             current_checksum = path_checksum(['./' + chapter])
@@ -163,9 +166,9 @@ class HandoutsBuilder:
             else:
                 self.changed_chapters_list.append(chapter)
                 #print(self.changed_chapters_list)
-            f.write(chapter + ": " + str(current_checksum) + "\n")
+            logfile.write(chapter + ": " + str(current_checksum) + "\n")
         print("")
-        f.close()
+        logfile.close()
 
     def timing(self, action):
         """Calculate the runtime of the program in seconds """
@@ -259,6 +262,7 @@ class HandoutsBuilder:
                 sys.exit(self.failed_builds_counter)
 
     def print_warning_message(self, command, counter):
+        """ Print 'warning message' to cli, can be parsed by Jenkins (CLANG plugin) """ 
         temp = counter + 1
         while counter > 0:
             print (command + ".tex:" + str(temp - counter) + ": warning: pdflatex problem ")
@@ -283,7 +287,7 @@ class HandoutsBuilder:
                 os.kill(process.pid, signal.SIGKILL)
                 os.waitpid(-1, os.WNOHANG)
                 self.failed_builds_counter += 1
-                self.failed_builds_list.append(current_chapter)
+                self.failed_builds_list.append(command)
                 return None
             time.sleep(0.01)
         return warnings
@@ -414,21 +418,22 @@ def path_checksum(paths):
         http://code.activestate.com/recipes/576973-getting-the-sha-1-or-md5-hash-of-a-directory/
     """
     if not hasattr(paths, '__iter__'):
-        raise TypeError('sequence or iterable expected not %r!' % type(paths))
         self.failed_builds_counter += 1
+        raise TypeError('sequence or iterable expected not %r!' % type(paths))
 
     def _update_checksum(checksum, dirname, filenames):
+        """ Update the checksum for a file """
         for filename in sorted(filenames):
             path = path_join(dirname, filename)
             if isfile(path):
                 #print path
-                fh = open(path, 'rb')
+                file_handler = open(path, 'rb')
                 while 1:
-                    buf = fh.read(4096)
+                    buf = file_handler.read(4096)
                     if not buf:
                         break
                     checksum.update(buf)
-                fh.close()
+                file_handler.close()
 
     chksum = hashlib.sha1()
 
