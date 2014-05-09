@@ -150,7 +150,6 @@ class HandoutsBuilder:
         previous_checksum_counter = 0
         for chapter_info in enumerate(self.settings.chapters_checksum_list):
             previous_checksum_counter = chapter_info[0]
-            print(previous_checksum_counter)
         for number, chapter in enumerate(self.chapters_list):
             current_checksum = path_checksum(['./' + chapter])
             if (number <= previous_checksum_counter):
