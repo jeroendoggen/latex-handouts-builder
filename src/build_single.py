@@ -128,6 +128,7 @@ class HandoutsBuilder:
         self.calculate_total_tasks()
         if(self.settings.build_all == 'True'):
             print("Building all chapters")
+            # This could be disabled (but might be useful in some cases)
             self.detect_changed_chapters()
             self.build_handouts(self.chapters_list)
         else:
@@ -147,8 +148,9 @@ class HandoutsBuilder:
         logfile = open(self.settings.logfile, "w")
         logfile.write("[Chapters]" + "\n")
         previous_checksum_counter = 0
-        for counter in enumerate(self.settings.chapters_checksum_list):
-            previous_checksum_counter = counter
+        for chapter_info in enumerate(self.settings.chapters_checksum_list):
+            previous_checksum_counter = chapter_info[0]
+            print(previous_checksum_counter)
         for number, chapter in enumerate(self.chapters_list):
             current_checksum = path_checksum(['./' + chapter])
             if (number <= previous_checksum_counter):
